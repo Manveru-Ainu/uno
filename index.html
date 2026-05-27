@@ -316,6 +316,49 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
   .win-box { padding: 28px 20px; }
   .win-title { font-size: 26px; }
 }
+
+/* ── QUIZ OVERLAY ── */
+.quiz-overlay {
+  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(44,62,80,.6); z-index: 250;
+  align-items: center; justify-content: center;
+  -webkit-overflow-scrolling: auto; overscroll-behavior: contain;
+}
+.quiz-overlay.on { display: flex; }
+.quiz-box {
+  background: white; border-radius: 20px; padding: 22px 20px;
+  max-width: 340px; width: 92%; box-shadow: 0 24px 80px rgba(0,0,0,.25);
+}
+.quiz-card-preview {
+  border-radius: 12px; padding: 12px 10px; display: flex; flex-direction: column;
+  align-items: center; gap: 3px; margin-bottom: 14px; position: relative;
+  border: 2px solid; min-height: 90px; justify-content: center;
+}
+.quiz-card-preview .qcp-dot { position: absolute; top: 5px; left: 8px; font-size: 12px; }
+.quiz-card-preview .qcp-emoji { font-size: 32px; line-height: 1; }
+.quiz-card-preview .qcp-verb { font-size: 17px; font-weight: 900; }
+.quiz-card-preview .qcp-tense { position: absolute; bottom: 5px; right: 0; left: 0; text-align: center; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; opacity: .8; }
+.quiz-question { font-size: 13px; color: #7F8C8D; margin-bottom: 4px; }
+.quiz-verb-big { font-family: 'Fredoka One', sans-serif; font-size: 22px; color: #2C3E50; margin-bottom: 14px; }
+.quiz-opt {
+  display: block; width: 100%; padding: 13px 16px; border-radius: 12px;
+  border: 2px solid #DDE3EC; background: white;
+  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
+  color: #2C3E50; margin-bottom: 9px; cursor: pointer; text-align: left;
+  transition: border-color .15s, background .15s;
+  touch-action: manipulation; -webkit-appearance: none; appearance: none;
+}
+.quiz-opt:last-child { margin-bottom: 0; }
+.quiz-opt:hover { border-color: #2980B9; background: #EAF4FB; color: #185FA5; }
+.quiz-opt.correct { background: #EAFAF1; border-color: #27AE60; color: #1E8449; pointer-events: none; }
+.quiz-opt.wrong   { background: #FDECEB; border-color: #E74C3C; color: #C0392B; pointer-events: none; }
+.quiz-opt.dimmed  { opacity: .35; pointer-events: none; }
+.quiz-feedback {
+  border-radius: 10px; padding: 11px 14px; font-size: 13px; font-weight: 700;
+  text-align: center; margin-top: 12px;
+}
+.quiz-feedback.ok   { background: #EAFAF1; color: #1E8449; border: 1.5px solid #27AE60; }
+.quiz-feedback.fail { background: #FDECEB; color: #C0392B; border: 1.5px solid #E74C3C; }
 </style>
 </head>
 <body>
@@ -413,6 +456,19 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
 </div>
 
 <!-- ══════════ OVERLAYS ══════════ -->
+
+<!-- ══════════ QUIZ OVERLAY ══════════ -->
+<div class="quiz-overlay" id="quiz-overlay">
+  <div class="quiz-box">
+    <div class="quiz-card-preview" id="qcp"></div>
+    <div class="quiz-question" id="quiz-q"></div>
+    <div class="quiz-verb-big" id="quiz-verb-big"></div>
+    <div id="quiz-opts"></div>
+    <div class="quiz-feedback" id="quiz-feedback" style="display:none"></div>
+  </div>
+</div>
+
+
 <div class="color-picker-overlay" id="color-overlay">
   <div class="color-picker-box">
     <h3>Choose a color</h3>
@@ -606,7 +662,6 @@ const COLOR_NAMES = {red:'🔴 Red',blue:'🔵 Blue',green:'🟢 Green',yellow:'
 // SPEECH / PRONUNCIATION
 // ═══════════════════════════════════════
 let speechEnabled = true;
-let lastSpokenDiscard = null; // track to avoid re-speaking same card on re-render
 
 let speechUnlocked = false;
 
@@ -954,14 +1009,9 @@ function renderGame() {
     </div>
   `).join('');
 
-  // discard — speak when top card changes
+  // discard — render only, no auto-speech (speech happens in quiz)
   document.getElementById('discard-top').innerHTML = cardHtml(top,'table');
   document.getElementById('deck-count').textContent = (g.deck||[]).length+' 🂠';
-  const discardKey = top ? (top.type==='verb' ? top.verb.b+top.vtype : top.type) + (g.lastAction||'') : '';
-  if (discardKey && discardKey !== lastSpokenDiscard) {
-    lastSpokenDiscard = discardKey;
-    if (top.type === 'verb') speakCard(top);
-  }
 
   // message
   const mb = document.getElementById('msg-bar');
@@ -1007,6 +1057,143 @@ function cardTooltip(card) {
 }
 
 // ═══════════════════════════════════════
+// QUIZ SYSTEM
+// ═══════════════════════════════════════
+let pendingQuizCardIdx = -1;
+
+const TENSE_KEYS   = ['b','p','pp','g'];
+const TENSE_NAMES  = {b:'Base form', p:'Simple Past', pp:'Past Participle', g:'Gerund'};
+const TENSE_Q      = {b:'Base form', p:'Simple Past', pp:'Past Participle', g:'Gerund'};
+
+// Color config matching UNO palette
+const COLOR_CFG = {
+  red:    { bg:'#FDECEB', border:'#E74C3C', text:'#C0392B', dot:'🔴' },
+  blue:   { bg:'#EAF4FB', border:'#2980B9', text:'#1A5276', dot:'🔵' },
+  green:  { bg:'#EAFAF1', border:'#27AE60', text:'#1E8449', dot:'🟢' },
+  yellow: { bg:'#FEF9E7', border:'#F39C12', text:'#9A6B00', dot:'🟡' },
+  wild:   { bg:'#F4F6F9', border:'#BDC3C7', text:'#2C3E50', dot:'🌈' }
+};
+
+function buildQuiz(card) {
+  // Pick a tense DIFFERENT from the card's current tense to ask about
+  const otherTenses = TENSE_KEYS.filter(function(t){ return t !== card.vtype; });
+  const askTense = otherTenses[Math.floor(Math.random() * otherTenses.length)];
+  const correct = card.verb[askTense];
+
+  // Generate 2 wrong answers from other verbs — same tense slot, different verb
+  const pool = VERBS.filter(function(v){ return v.b !== card.verb.b; });
+  const shuffled = pool.slice().sort(function(){ return Math.random() - 0.5; });
+  const wrongs = [];
+  for (var i = 0; i < shuffled.length && wrongs.length < 2; i++) {
+    var w = shuffled[i][askTense];
+    if (w !== correct && wrongs.indexOf(w) === -1) wrongs.push(w);
+  }
+  const options = [correct, wrongs[0], wrongs[1]].sort(function(){ return Math.random() - 0.5; });
+  return { askTense: askTense, correct: correct, options: options };
+}
+
+function showQuiz(cardIdx) {
+  const g = localGame;
+  const card = (g.hands[myIdx]||[])[cardIdx];
+  if (!card || card.type !== 'verb') {
+    // Non-verb card: play directly without quiz
+    executePlay(cardIdx);
+    return;
+  }
+  pendingQuizCardIdx = cardIdx;
+  const quiz = buildQuiz(card);
+
+  // Card preview with correct UNO color
+  const cc = COLOR_CFG[card.activeColor || card.color] || COLOR_CFG.red;
+  const emoji = VERB_EMOJI[card.verb.b] || '📝';
+  document.getElementById('qcp').style.cssText =
+    'background:' + cc.bg + ';border-color:' + cc.border + ';color:' + cc.text;
+  document.getElementById('qcp').innerHTML =
+    '<div class="qcp-dot">' + cc.dot + '</div>' +
+    '<div class="qcp-emoji">' + emoji + '</div>' +
+    '<div class="qcp-verb">' + card.verb[card.vtype] + '</div>' +
+    '<div class="qcp-tense">' + TENSE_Q[card.vtype] + '</div>';
+
+  // Question
+  document.getElementById('quiz-q').textContent =
+    'What is the ' + TENSE_NAMES[quiz.askTense] + ' of...';
+  document.getElementById('quiz-verb-big').textContent =
+    card.verb.b + '  ' + (VERB_EMOJI[card.verb.b] || '');
+
+  // Options
+  var optsHtml = '';
+  quiz.options.forEach(function(opt) {
+    optsHtml += '<button class="quiz-opt" onclick="answerQuiz('' +
+      opt.replace(/'/g, "\'") + '','' +
+      quiz.correct.replace(/'/g, "\'") + '',' + cardIdx + ')">' +
+      opt + '</button>';
+  });
+  document.getElementById('quiz-opts').innerHTML = optsHtml;
+  document.getElementById('quiz-feedback').style.display = 'none';
+  document.getElementById('quiz-feedback').textContent = '';
+
+  // Pronounce the verb form on the card (only once here, not again on discard change)
+  speakCard(card);
+
+  document.getElementById('quiz-overlay').classList.add('on');
+}
+
+function answerQuiz(chosen, correct, cardIdx) {
+  const fb = document.getElementById('quiz-feedback');
+  // Highlight options
+  var opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach(function(btn) {
+    var txt = btn.textContent.trim();
+    if (txt === correct) {
+      btn.classList.add('correct');
+    } else if (txt === chosen && chosen !== correct) {
+      btn.classList.add('wrong');
+    } else {
+      btn.classList.add('dimmed');
+    }
+  });
+
+  if (chosen === correct) {
+    fb.textContent = '🎉 Correct! Playing your card...';
+    fb.className = 'quiz-feedback ok';
+    fb.style.display = 'block';
+    setTimeout(function() {
+      document.getElementById('quiz-overlay').classList.remove('on');
+      executePlay(cardIdx);
+    }, 900);
+  } else {
+    fb.textContent = '❌ Wrong! The answer is "' + correct + '". Drawing +1 card...';
+    fb.className = 'quiz-feedback fail';
+    fb.style.display = 'block';
+    setTimeout(function() {
+      document.getElementById('quiz-overlay').classList.remove('on');
+      penalizeWrongAnswer();
+    }, 1800);
+  }
+}
+
+function penalizeWrongAnswer() {
+  // Card stays in hand; player draws +1
+  const g = localGame;
+  if (!g) return;
+  var newHands = JSON.parse(JSON.stringify(g.hands));
+  var newDeck  = (g.deck || []).slice();
+  var newDiscard = g.discard.slice();
+  if (newDeck.length === 0) {
+    var td = newDiscard.pop();
+    newDeck = shuffle(newDiscard);
+    newDiscard = [td];
+  }
+  var drawn = newDeck.shift();
+  if (drawn) newHands[myIdx].push(drawn);
+  roomRef.child('game').update({
+    hands: newHands, deck: newDeck, discard: newDiscard,
+    message: myName + ' answered wrong and draws 1 card.',
+    lastAction: Date.now()
+  });
+}
+
+// ═══════════════════════════════════════
 // PLAY A CARD
 // ═══════════════════════════════════════
 function onPlayCard(idx) {
@@ -1017,26 +1204,38 @@ function onPlayCard(idx) {
   const card = myHand[idx];
   const top = g.discard[g.discard.length-1];
   if(!canPlay(card, top)) return;
+  // Verb cards go through quiz; special cards play directly
+  if (card.type === 'verb') {
+    showQuiz(idx);
+  } else {
+    executePlay(idx);
+  }
+}
 
-  // remove from hand
-  myHand.splice(idx,1);
+function executePlay(idx) {
+  const g = localGame;
+  if(!g || g.current!==myIdx) return;
+  var myHand = (g.hands[myIdx]||[]).slice();
+  var card = myHand[idx];
+  if (!card) return;
+  var top = g.discard[g.discard.length-1];
+  if(!canPlay(card, top)) return;
 
-  // check win
+  myHand.splice(idx, 1);
+
   if(myHand.length===0) {
     commitWin(card, myHand, g);
     return;
   }
 
   if(card.type==='wild'||card.type==='wild4') {
-    // need color pick
-    const newDiscard = [...g.discard, card];
-    const updates = {
-      [`hands/${myIdx}`]: myHand,
-      discard: newDiscard,
-      pendingWild: true,
-      lastWildPlayer: myIdx,
-      message: `${myName} played ${card.type==='wild4'?'Wild +4':'Wild Card'}. Choose a color.`
-    };
+    var newDiscard = g.discard.concat([card]);
+    var updates = {};
+    updates['hands/' + myIdx] = myHand;
+    updates.discard = newDiscard;
+    updates.pendingWild = true;
+    updates.lastWildPlayer = myIdx;
+    updates.message = myName + ' played ' + (card.type==='wild4'?'Wild +4':'Wild Card') + '. Choose a color.';
     roomRef.child('game').update(updates);
     return;
   }
