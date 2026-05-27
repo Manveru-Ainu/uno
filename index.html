@@ -511,25 +511,35 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
 
 <div class="notif" id="notif"></div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!-- Firebase v8 compat from jsDelivr — fallback to unpkg if needed -->
+<script>
+function _firebaseLoadError() {
+  document.body.innerHTML = '<div style="padding:32px;font-family:sans-serif;color:#E74C3C"><h2>Connection error</h2><p>Could not load Firebase. Check your internet and reload.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#E74C3C;color:white;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js" onerror="_firebaseLoadError()"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-database.js" onerror="_firebaseLoadError()"></script>
 
 <script>
 // ═══════════════════════════════════════
-// FIREBASE
+// FIREBASE INIT
 // ═══════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyCDCVxdCFz3ahan9TY49nNL3gOAA9Gvi8k",
-  authDomain: "bingo-irr-verbs.firebaseapp.com",
-  databaseURL: "https://bingo-irr-verbs-default-rtdb.firebaseio.com",
-  projectId: "bingo-irr-verbs",
-  storageBucket: "bingo-irr-verbs.firebasestorage.app",
-  messagingSenderId: "675589699924",
-  appId: "1:675589699924:web:1019a3859483fdff64b0c1"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+var db;
+try {
+  if (typeof firebase === 'undefined') throw new Error('Firebase SDK not loaded. Check internet connection.');
+  firebase.initializeApp({
+    apiKey:            "AIzaSyCDCVxdCFz3ahan9TY49nNL3gOAA9Gvi8k",
+    authDomain:        "bingo-irr-verbs.firebaseapp.com",
+    databaseURL:       "https://bingo-irr-verbs-default-rtdb.firebaseio.com",
+    projectId:         "bingo-irr-verbs",
+    storageBucket:     "bingo-irr-verbs.firebasestorage.app",
+    messagingSenderId: "675589699924",
+    appId:             "1:675589699924:web:1019a3859483fdff64b0c1"
+  });
+  db = firebase.database();
+} catch(err) {
+  document.body.innerHTML = '<div style="padding:32px;font-family:sans-serif;color:#E74C3C"><h2>Firebase error</h2><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#E74C3C;color:white;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
+}
 
 // ═══════════════════════════════════════
 // VERB DATA
@@ -747,17 +757,21 @@ function shuffle(a) {
 function showEl(id){ document.getElementById(id).style.display='flex'; }
 function hideEl(id){ document.getElementById(id).style.display='none'; }
 function showScreen(id) {
-  ['room-screen','lobby-screen','game-screen'].forEach(s => {
-    document.getElementById(s).style.display = s===id ? 'flex' : 'none';
+  ['room-screen','lobby-screen','game-screen'].forEach(function(s) {
+    var el = document.getElementById(s);
+    if (el) el.style.display = s===id ? 'flex' : 'none';
   });
-  document.getElementById(id).style.flexDirection = 'column';
+  var target = document.getElementById(id);
+  if (target) target.style.flexDirection = 'column';
 }
-function wait(txt){ document.getElementById('wait-overlay').classList.add('on'); document.getElementById('wait-txt').textContent=txt||'Connecting...'; }
-function noWait(){ document.getElementById('wait-overlay').classList.remove('on'); }
-function notify(txt,ms=2500){
-  const el=document.getElementById('notif');
+function wait(txt){ var o=document.getElementById('wait-overlay'); var t=document.getElementById('wait-txt'); if(o) o.classList.add('on'); if(t) t.textContent=txt||'Connecting...'; }
+function noWait(){ var o=document.getElementById('wait-overlay'); if(o) o.classList.remove('on'); }
+function notify(txt,ms){
+  ms = ms||2500;
+  var el=document.getElementById('notif');
+  if(!el) return;
   el.textContent=txt; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),ms);
+  setTimeout(function(){ el.classList.remove('show'); },ms);
 }
 
 // ═══════════════════════════════════════
@@ -931,38 +945,9 @@ function listenLobby() {
 }
 
 // ═══════════════════════════════════════
-// HOST START GAME
+// HOST START GAME — defined once below (see INIT section)
 // ═══════════════════════════════════════
-async function hostStartGame() {
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-  const players = Object.values(data.players||{}).sort((a,b)=>a.idx-b.idx);
-  if(players.length<2){ document.getElementById('lobby-err').textContent='You need at least 2 players.'; return; }
-
-  const deck = buildDeck();
-  // deal 7 each
-  const hands = players.map(()=>[]);
-  for(let i=0;i<7;i++) players.forEach((_,pi)=>hands[pi].push(deck.shift()));
-  // first discard (no wild4)
-  let top = deck.shift();
-  while(top.type==='wild4'){ deck.push(top); shuffle(deck); top=deck.shift(); }
-
-  const game = {
-    deck: deck.slice(0, 150), // store up to 150 for firebase size
-    discard: [top],
-    hands: Object.fromEntries(hands.map((h,i)=>[i,h])),
-    current: 0,
-    direction: 1,
-    status: 'playing',
-    message: `${players[0].name}'s turn`,
-    lastAction: Date.now(),
-    pendingWild: false,
-    pendingChallenge: false,
-    lastWildPlayer: -1
-  };
-
-  await roomRef.update({ status:'playing', game });
-}
+var hostStartGame;  // declared here, defined fully in INIT
 
 // ═══════════════════════════════════════
 // ENTER GAME (called when game snapshot arrives)
@@ -989,12 +974,14 @@ function listenGame() {
 // RENDER GAME
 // ═══════════════════════════════════════
 function renderGame() {
-  const g = localGame;
+  var g = localGame;
   if(!g) return;
-  const players = getPlayers();
-  const myHand = (g.hands||{})[myIdx] || [];
-  const top = g.discard[g.discard.length-1];
-  const isMyTurn = g.current === myIdx;
+  var players = getPlayers();
+  var myHand = (g.hands||{})[myIdx] || [];
+  var top = g.discard[g.discard.length-1];
+  var isMyTurn = g.current === myIdx;
+  // If a Firebase update arrived while quiz was open and it's no longer our turn, close quiz
+  if (!isMyTurn) document.getElementById('quiz-overlay').classList.remove('on');
 
   // topbar
   document.getElementById('tb-code').textContent = '🔑 '+roomCode;
@@ -1031,10 +1018,19 @@ function renderGame() {
   } else {
     document.getElementById('color-overlay').classList.remove('on');
     document.getElementById('challenge-overlay').classList.remove('on');
-    hc.innerHTML = myHand.map((card,idx)=>{
-      const playable = isMyTurn && canPlay(card, top);
-      return `<div class="hcard ${playable?'playable':'unplayable'}" onclick="${playable?`onPlayCard(${idx})`:''}" title="${cardTooltip(card)}">${cardHtml(card,'hand')}</div>`;
-    }).join('');
+    hc.innerHTML = '';
+    myHand.forEach(function(card, idx) {
+      var playable = isMyTurn && canPlay(card, top);
+      var div = document.createElement('div');
+      div.className = 'hcard ' + (playable ? 'playable' : 'unplayable');
+      div.title = cardTooltip(card);
+      div.innerHTML = cardHtml(card, 'hand');
+      if (playable) {
+        div.setAttribute('data-idx', idx);
+        div.addEventListener('click', function() { onPlayCard(parseInt(this.getAttribute('data-idx'), 10)); });
+      }
+      hc.appendChild(div);
+    });
   }
 
   // pass button
@@ -1120,19 +1116,30 @@ function showQuiz(cardIdx) {
   document.getElementById('quiz-verb-big').textContent =
     card.verb.b + '  ' + (VERB_EMOJI[card.verb.b] || '');
 
-  // Options
-  var optsHtml = '';
+  // Options — use data-attributes to avoid quote-escaping bugs in all browsers
+  var optsDiv = document.getElementById('quiz-opts');
+  optsDiv.innerHTML = '';
   quiz.options.forEach(function(opt) {
-    optsHtml += '<button class="quiz-opt" onclick="answerQuiz('' +
-      opt.replace(/'/g, "\'") + '','' +
-      quiz.correct.replace(/'/g, "\'") + '',' + cardIdx + ')">' +
-      opt + '</button>';
+    var btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.setAttribute('data-opt', opt);
+    btn.setAttribute('data-correct', quiz.correct);
+    btn.setAttribute('data-cardidx', String(cardIdx));
+    btn.addEventListener('click', function() {
+      answerQuiz(
+        btn.getAttribute('data-opt'),
+        btn.getAttribute('data-correct'),
+        parseInt(btn.getAttribute('data-cardidx'), 10)
+      );
+    });
+    optsDiv.appendChild(btn);
   });
-  document.getElementById('quiz-opts').innerHTML = optsHtml;
-  document.getElementById('quiz-feedback').style.display = 'none';
-  document.getElementById('quiz-feedback').textContent = '';
+  var fb = document.getElementById('quiz-feedback');
+  fb.style.display = 'none';
+  fb.textContent = '';
 
-  // Pronounce the verb form on the card (only once here, not again on discard change)
+  // Pronounce only once when quiz opens
   speakCard(card);
 
   document.getElementById('quiz-overlay').classList.add('on');
@@ -1453,7 +1460,7 @@ function callUno() {
   if(!g) return;
   const myHand = g.hands?.[myIdx]||[];
   if(myHand.length===1) {
-    notify('🔔 UNO! Lo dijiste a tiempo.');
+    notify('🔔 UNO! You said it in time.');
     roomRef.child('game').update({ message: `🔔 ${myName} said UNO!` });
   } else {
     // Check if someone else has 1 card and didn't say UNO (honor system)
@@ -1500,6 +1507,7 @@ function leaveRoom() {
   inGame=false; localGame=null; myRole=null; myIdx=-1; roomRef=null; roomCode='';
   document.getElementById('color-overlay').classList.remove('on');
   document.getElementById('challenge-overlay').classList.remove('on');
+  document.getElementById('quiz-overlay').classList.remove('on');
   document.getElementById('win-overlay').classList.remove('on');
   showScreen('room-screen');
 }
@@ -1524,37 +1532,57 @@ function copyCode() {
 }
 
 // ═══════════════════════════════════════
-// INIT — need playerNames in game
+// INIT
 // ═══════════════════════════════════════
-// Patch: store playerNames in game at creation
-const _origHostStart = hostStartGame;
 hostStartGame = async function() {
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-  const players = Object.values(data.players||{}).sort((a,b)=>a.idx-b.idx);
-  if(players.length<2){ document.getElementById('lobby-err').textContent='You need at least 2 players.'; return; }
+  var snap = await roomRef.once('value');
+  var data = snap.val();
+  var players = Object.values(data.players||{}).sort(function(a,b){ return a.idx-b.idx; });
+  if(players.length < 2) {
+    document.getElementById('lobby-err').textContent = 'You need at least 2 players.';
+    return;
+  }
+  var deck = buildDeck();
+  var hands = players.map(function(){ return []; });
+  for(var i = 0; i < 7; i++) {
+    players.forEach(function(_, pi){ hands[pi].push(deck.shift()); });
+  }
+  var top = deck.shift();
+  while(top.type === 'wild4'){ deck.push(top); shuffle(deck); top = deck.shift(); }
 
-  const deck = buildDeck();
-  const hands = players.map(()=>[]);
-  for(let i=0;i<7;i++) players.forEach((_,pi)=>hands[pi].push(deck.shift()));
-  let top = deck.shift();
-  while(top.type==='wild4'){ deck.push(top); shuffle(deck); top=deck.shift(); }
-
-  const game = {
-    deck: deck.slice(0,200),
+  var game = {
+    deck: deck.slice(0, 200),
     discard: [top],
-    hands: Object.fromEntries(hands.map((h,i)=>[i,h])),
-    playerNames: Object.fromEntries(players.map((p,i)=>[i,p.name])),
-    current: 0, direction: 1, status:'playing',
-    message:`${players[0].name}'s turn`,
-    lastAction:Date.now(),
-    pendingWild:false, pendingChallenge:false, lastWildPlayer:-1
+    hands: (function(){
+      var h = {};
+      hands.forEach(function(hand, i){ h[i] = hand; });
+      return h;
+    })(),
+    playerNames: (function(){
+      var n = {};
+      players.forEach(function(p, i){ n[i] = p.name; });
+      return n;
+    })(),
+    current: 0,
+    direction: 1,
+    status: 'playing',
+    message: players[0].name + "'s turn",
+    lastAction: Date.now(),
+    pendingWild: false,
+    pendingChallenge: false,
+    lastWildPlayer: -1
   };
-  await roomRef.update({ status:'playing', game });
+  await roomRef.update({ status: 'playing', game: game });
 };
 
-// init
-showScreen('room-screen');
+// init — wait for DOM, only run if Firebase loaded OK
+if (typeof db !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ showScreen('room-screen'); });
+  } else {
+    showScreen('room-screen');
+  }
+}
 </script>
 </body>
 </html>
