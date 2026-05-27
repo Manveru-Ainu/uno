@@ -655,14 +655,7 @@ function speakText(text, rate, pitch) {
 
 function speakCard(card) {
   if (!card || card.type !== 'verb') return;
-  const form   = card.verb[card.vtype];
-  const tense  = TYPE_LABELS[card.vtype];
-  const base   = card.verb.b;
-  // Speak: tense label, then the form, then base form for context
-  const phrase = form === base
-    ? `${tense}. ${form}.`
-    : `${tense}. ${form}. From: ${base}.`;
-  speakText(phrase);
+  speakText(card.verb[card.vtype]);
 }
 
 // Load voices async (Chrome needs this)
