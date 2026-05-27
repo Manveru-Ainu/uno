@@ -151,9 +151,9 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--
   background: linear-gradient(135deg, var(--red-light) 25%, var(--blue-light) 25% 50%, var(--green-light) 50% 75%, var(--yellow-light) 75%);
   border-color: #BDC3C7; color: var(--text);
 }
-.card-verb  { font-size: 10px; font-weight: 800; text-align: center; padding: 0 3px; line-height: 1.2; }
-.card-type  { font-size: 8px; font-weight: 600; opacity: .75; text-transform: uppercase; letter-spacing: .3px; }
-.card-emoji { font-size: 28px; line-height: 1; margin: 2px 0; }
+.card-verb  { font-size: 10px; font-weight: 800; text-align: center; padding: 0 3px; line-height: 1.2; position: absolute; top: 18px; left: 0; right: 0; }
+.card-type  { font-size: 8px; font-weight: 600; opacity: .8; text-transform: uppercase; letter-spacing: .3px; position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; }
+.card-emoji { font-size: 30px; line-height: 1; }
 .card-sym   { font-size: 26px; font-weight: 900; line-height: 1; }
 .card-sym-sm { font-size: 10px; font-weight: 800; position: absolute; top: 4px; left: 5px; line-height: 1; }
 .card-sym-sm2 { font-size: 10px; font-weight: 800; position: absolute; bottom: 4px; right: 5px; transform: rotate(180deg); line-height: 1; }
@@ -655,7 +655,9 @@ function speakText(text, rate, pitch) {
 
 function speakCard(card) {
   if (!card || card.type !== 'verb') return;
-  speakText(card.verb[card.vtype]);
+  // Speak only the verb form — nothing else
+  const form = card.verb[card.vtype];
+  speakText(form, 0.82, 1.0);
 }
 
 // Load voices async (Chrome needs this)
@@ -759,10 +761,10 @@ function cardHtml(card, size) {
   if(card.type==='verb'){
     const form = card.verb[card.vtype];
     const emoji = VERB_EMOJI[card.verb.b] || '📝';
-    return `<div class="card ${cc}" style="width:${w}px;height:${h}px">
+    return `<div class="card ${cc}" style="width:${w}px;height:${h}px;justify-content:center;">
       <div class="card-sym-sm">${ac!=='wild'?sym(ac):''}</div>
-      <div class="card-emoji">${emoji}</div>
       <div class="card-verb">${form}</div>
+      <div class="card-emoji">${emoji}</div>
       <div class="card-type">${TYPE_LABELS[card.vtype]}</div>
       <div class="card-sym-sm2">${ac!=='wild'?sym(ac):''}</div>
     </div>`;
