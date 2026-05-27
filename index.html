@@ -1542,6 +1542,13 @@ hostStartGame = async function() {
     document.getElementById('lobby-err').textContent = 'You need at least 2 players.';
     return;
   }
+
+  // Shuffle player order randomly — preserved for the whole game
+  for(var s = players.length - 1; s > 0; s--) {
+    var r = Math.floor(Math.random() * (s + 1));
+    var tmp = players[s]; players[s] = players[r]; players[r] = tmp;
+  }
+
   var deck = buildDeck();
   var hands = players.map(function(){ return []; });
   for(var i = 0; i < 7; i++) {
@@ -1563,6 +1570,7 @@ hostStartGame = async function() {
       players.forEach(function(p, i){ n[i] = p.name; });
       return n;
     })(),
+    playerOrder: players.map(function(p){ return p.name; }),
     current: 0,
     direction: 1,
     status: 'playing',
