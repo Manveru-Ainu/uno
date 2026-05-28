@@ -1071,20 +1071,31 @@ const COLOR_CFG = {
 };
 
 function buildQuiz(card) {
-  // Pick a tense DIFFERENT from the card's current tense to ask about
-  const otherTenses = TENSE_KEYS.filter(function(t){ return t !== card.vtype; });
-  const askTense = otherTenses[Math.floor(Math.random() * otherTenses.length)];
-  const correct = card.verb[askTense];
+  // Ask about a tense DIFFERENT from the card's current tense
+  var otherTenses = TENSE_KEYS.filter(function(t){ return t !== card.vtype; });
+  var askTense = otherTenses[Math.floor(Math.random() * otherTenses.length)];
+  var correct = card.verb[askTense];
 
-  // Generate 2 wrong answers from other verbs — same tense slot, different verb
-  const pool = VERBS.filter(function(v){ return v.b !== card.verb.b; });
-  const shuffled = pool.slice().sort(function(){ return Math.random() - 0.5; });
-  const wrongs = [];
-  for (var i = 0; i < shuffled.length && wrongs.length < 2; i++) {
-    var w = shuffled[i][askTense];
+  // Wrong options = the OTHER tense forms of the SAME verb (not other verbs)
+  var wrongTenses = TENSE_KEYS.filter(function(t){ return t !== card.vtype && t !== askTense; });
+  // Shuffle wrong tenses so order varies
+  wrongTenses.sort(function(){ return Math.random() - 0.5; });
+  var wrongs = [];
+  for (var i = 0; i < wrongTenses.length; i++) {
+    var w = card.verb[wrongTenses[i]];
+    // Only add if distinct from correct (some verbs share forms e.g. cut/cut/cut)
     if (w !== correct && wrongs.indexOf(w) === -1) wrongs.push(w);
   }
-  const options = [correct, wrongs[0], wrongs[1]].sort(function(){ return Math.random() - 0.5; });
+  // If the verb has duplicate forms (e.g. "cut"), pull one distractor from another verb
+  if (wrongs.length < 2) {
+    var pool = VERBS.filter(function(v){ return v.b !== card.verb.b; });
+    pool.sort(function(){ return Math.random() - 0.5; });
+    for (var j = 0; j < pool.length && wrongs.length < 2; j++) {
+      var extra = pool[j][askTense];
+      if (extra !== correct && wrongs.indexOf(extra) === -1) wrongs.push(extra);
+    }
+  }
+  var options = [correct, wrongs[0], wrongs[1]].sort(function(){ return Math.random() - 0.5; });
   return { askTense: askTense, correct: correct, options: options };
 }
 
