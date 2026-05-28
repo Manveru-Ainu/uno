@@ -447,6 +447,7 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
         <div class="action-bar">
           <button class="btn-sm uno" onclick="callUno()">🔔 UNO!</button>
           <button class="btn-sm" id="btn-pass" onclick="passTurn()">Pass turn</button>
+          <button class="btn-sm" id="btn-host-skip" onclick="hostSkipPlayer()" style="display:none;background:var(--yellow-light);color:var(--yellow);border-color:var(--yellow-mid)" title="Skip stuck player (host only)">⏭ Skip player</button>
           <button class="btn-sm" style="font-size:11px;color:var(--text2)" onclick="leaveRoom()">Leave</button>
         </div>
       </div>
@@ -906,7 +907,7 @@ async function joinRoom() {
     // get next idx
     const players = data.players||{};
     const idx = Object.keys(players).length;
-    if(idx>=8){ noWait(); document.getElementById('join-err').textContent='Room is full (max 8 players).'; return; }
+    if(idx>=15){ noWait(); document.getElementById('join-err').textContent='Room is full (max 15 players).'; return; }
     myRole='player'; myName=name; roomCode=code; roomRef=ref; myIdx=idx;
     await ref.child('players/'+idx).set({name, idx, cardCount:0, online:true});
     noWait();
@@ -1035,6 +1036,17 @@ function renderGame() {
 
   // pass button
   document.getElementById('btn-pass').disabled = !isMyTurn;
+
+  // host skip button — visible to host only, disabled when it IS the host's own turn
+  var skipBtn = document.getElementById('btn-host-skip');
+  if (skipBtn) {
+    if (myRole === 'host') {
+      skipBtn.style.display = 'inline-block';
+      skipBtn.disabled = isMyTurn; // host skips others, not themselves
+    } else {
+      skipBtn.style.display = 'none';
+    }
+  }
 }
 
 function getPlayers() {
@@ -1439,6 +1451,26 @@ function passTurn() {
     message: `${myName} passed. ${players[nextIdx]?.name||'?'}'s turn.`,
     lastAction: Date.now()
   });
+}
+
+// ═══════════════════════════════════════
+// HOST SKIP PLAYER
+// ═══════════════════════════════════════
+function hostSkipPlayer() {
+  if (myRole !== 'host') return;
+  var g = localGame;
+  if (!g || g.status !== 'playing') return;
+  var players = getPlayers();
+  var n = players.length;
+  var skippedName = players[g.current] ? players[g.current].name : 'Player';
+  var nextIdx = (g.current + g.direction + n) % n;
+  document.getElementById('quiz-overlay').classList.remove('on');
+  roomRef.child('game').update({
+    current: nextIdx,
+    message: 'Host skipped ' + skippedName + '. ' + (players[nextIdx] ? players[nextIdx].name : '') + "'s turn.",
+    lastAction: Date.now()
+  });
+  notify('Skipped ' + skippedName);
 }
 
 // ═══════════════════════════════════════
