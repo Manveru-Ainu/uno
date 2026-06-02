@@ -957,15 +957,40 @@ let inGame = false;
 function enterGame(game, players) {
   if(!inGame) {
     inGame = true;
+
+    // Recalculate myIdx using the shuffled playerNames stored in the game.
+    // myIdx at join-time = lobby order. After shuffle it no longer matches
+    // the hand/turn index. We find our name in playerNames to get the real index.
+    if (game && game.playerNames) {
+      var names = game.playerNames; // { "0": "Miguel", "1": "Majo", ... }
+      var found = false;
+      for (var k in names) {
+        if (names[k] === myName) {
+          myIdx = parseInt(k, 10);
+          found = true;
+          break;
+        }
+      }
+      // Edge case: two players with same name — fall back to lobby idx
+      if (!found) console.warn('UNO: could not find', myName, 'in playerNames, keeping lobby idx');
+    }
+
     showScreen('game-screen');
     listenGame();
   }
 }
 
 function listenGame() {
-  roomRef.child('game').on('value', snap => {
+  roomRef.child('game').on('value', function(snap) {
     if(!snap.exists()) return;
     localGame = snap.val();
+    // Re-sync myIdx on every update in case of reconnect or first load
+    if (localGame.playerNames) {
+      var names = localGame.playerNames;
+      for (var k in names) {
+        if (names[k] === myName) { myIdx = parseInt(k, 10); break; }
+      }
+    }
     if(localGame.status==='won') { showWin(localGame.winner); return; }
     renderGame();
   });
