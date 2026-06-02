@@ -2,1638 +2,916 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F4F6F9">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>UNO — Irregular Verbs</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordMatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --red:    #E74C3C; --red-light: #FDECEB; --red-mid: #F1948A;
-  --blue:   #2980B9; --blue-light: #EAF4FB; --blue-mid: #85C1E9;
-  --green:  #27AE60; --green-light: #EAFAF1; --green-mid: #82E0AA;
-  --yellow: #F39C12; --yellow-light: #FEF9E7; --yellow-mid: #F8C471;
-  --bg:     #F4F6F9;
-  --surface: #FFFFFF;
-  --border: #DDE3EC;
-  --text:   #2C3E50;
-  --text2:  #7F8C8D;
-  --radius: 16px;
-  --shadow: 0 4px 20px rgba(44,62,80,.10);
+  --bg:#f0f4ff; --white:#fff; --surface:#f8f9ff;
+  --blue:#5b6af0; --blue-bg:#eef0ff;
+  --green:#00c48c; --green-bg:#e8faf3;
+  --red:#f0556a; --red-bg:#fff0f2;
+  --orange:#f57c00; --orange-bg:#fff8e1;
+  --purple:#7b1fa2; --purple-bg:#f3e5f5;
+  --muted:#7880aa; --text:#1a1d3a; --border:#e0e4f5;
+  --noun:#2196f3; --noun-bg:#e3f2fd; --noun-br:#90caf9;
+  --adj:#f57c00;  --adj-bg:#fff3e0;  --adj-br:#ffb74d;
+  --verb:#7b1fa2; --verb-bg:#f3e5f5; --verb-br:#ce93d8;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
-
-/* ── ROOM SCREEN ── */
-#room-screen {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 100vh; min-height: -webkit-fill-available; min-height: 100dvh; padding: 24px 16px env(safe-area-inset-bottom, 16px); background: var(--bg);
-}
-.room-logo {
-  font-family: 'Fredoka One', sans-serif;
-  font-size: clamp(52px, 14vw, 96px);
-  color: var(--red);
-  letter-spacing: -2px; line-height: 1;
-  text-shadow: 4px 4px 0 #FDECEB;
-  margin-bottom: 4px;
-}
-.room-sub { font-size: 14px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
-.room-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 700px; width: 100%; margin-bottom: 24px; }
-.room-card {
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--radius); padding: 24px 28px;
-  flex: 1 1 280px; max-width: 320px;
-  box-shadow: var(--shadow);
-}
-.room-card-title { font-family: 'Fredoka One', sans-serif; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-.room-card-title.host { color: var(--red); }
-.room-card-title.join { color: var(--blue); }
-.inp {
-  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
-  border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 15px;
-  font-weight: 700; background: var(--bg); color: var(--text);
-  outline: none; margin-bottom: 10px; text-align: center;
-  transition: border .2s;
-}
-.inp:focus { border-color: var(--blue); background: white; }
-.inp.code { letter-spacing: 4px; text-transform: uppercase; font-size: 18px; }
-.btn {
-  width: 100%; padding: 13px; border: none; border-radius: 10px;
-  font-family: 'Fredoka One', sans-serif; font-size: 16px;
-  cursor: pointer; transition: transform .15s, filter .15s;
-}
-.btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-.btn:active { transform: scale(.98); }
-.btn-red { background: var(--red); color: white; }
-.btn-blue { background: var(--blue); color: white; }
-.btn-gray { background: #ECF0F1; color: var(--text); }
-.err-msg { font-size: 12px; color: var(--red); min-height: 16px; text-align: center; margin-top: 6px; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.screen{display:none;}
+.screen.on{display:flex;flex-direction:column;min-height:100vh;}
 
 /* ── LOBBY ── */
-#lobby-screen { display: none; flex-direction: column; align-items: center; min-height: 100vh; min-height: -webkit-fill-available; min-height: 100dvh; padding: 24px 16px env(safe-area-inset-bottom, 16px); background: var(--bg); }
-.lobby-box {
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--radius); padding: 28px; max-width: 560px; width: 100%;
-  box-shadow: var(--shadow); text-align: center;
-}
-.lobby-title { font-family: 'Fredoka One', sans-serif; font-size: 22px; color: var(--red); margin-bottom: 6px; }
-.code-badge {
-  display: inline-block; background: var(--red); color: white;
-  font-family: 'Fredoka One', sans-serif; font-size: 28px;
-  letter-spacing: 6px; padding: 10px 28px; border-radius: 12px;
-  margin: 12px 0 20px; cursor: pointer;
-}
-.code-badge:hover::after { content: ' 📋'; }
-.player-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 40px; margin-bottom: 16px; }
-.player-chip {
-  padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
-  background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid);
-}
-.player-chip.host { background: var(--red-light); color: var(--red); border-color: var(--red-mid); }
+#lobby{align-items:center;justify-content:center;padding:2rem 1rem;gap:1.5rem;}
+.logo h1{font-size:clamp(2.5rem,8vw,4rem);font-weight:900;letter-spacing:-2px;text-align:center;background:linear-gradient(135deg,#5b6af0,#f0556a,#00c48c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo p{text-align:center;color:var(--muted);font-size:.85rem;letter-spacing:3px;text-transform:uppercase;margin-top:.3rem;}
+.card{background:var(--white);border:2px solid var(--border);border-radius:18px;padding:2rem;width:100%;max-width:440px;display:flex;flex-direction:column;gap:1.1rem;box-shadow:0 4px 24px rgba(91,106,240,.10);}
+.card h2{font-size:1.1rem;font-weight:800;color:var(--blue);}
+label{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin-bottom:.35rem;}
+input[type=text],input[type=number]{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:.8rem 1rem;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--text);outline:none;}
+input:focus{border-color:var(--blue);}
+input::placeholder{color:#b0b8d4;}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;}
+.cat{padding:.7rem .4rem;border-radius:10px;border:2px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+.cat span{font-size:1.3rem;}
+.cat.on.noun{border-color:var(--noun);background:var(--noun-bg);color:var(--noun);}
+.cat.on.adj {border-color:var(--adj); background:var(--adj-bg); color:var(--adj);}
+.cat.on.verb{border-color:var(--verb);background:var(--verb-bg);color:var(--verb);}
+hr{border:none;border-top:2px solid var(--border);}
+.btn{width:100%;padding:.85rem;border-radius:12px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+.btn-blue  {background:linear-gradient(135deg,#5b6af0,#7c8cf8);color:#fff;box-shadow:0 4px 18px rgba(91,106,240,.30);}
+.btn-green {background:linear-gradient(135deg,#00c48c,#00e0a0);color:#fff;}
+.btn-gray  {background:var(--surface);color:var(--text);border:2px solid var(--border);}
+.btn-red   {background:var(--red-bg);color:var(--red);border:2px solid #ffc0c8;}
+.btn-orange{background:var(--orange-bg);color:var(--orange);border:2px solid #ffe082;font-size:.88rem;padding:.55rem 1rem;width:auto;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.join-row{display:flex;gap:.6rem;}
+.join-row input{flex:1;text-transform:uppercase;letter-spacing:4px;text-align:center;font-size:1.1rem;}
 
-/* ── GAME SCREEN ── */
-#game-screen { display: none; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--bg); }
-.topbar {
-  background: var(--surface); border-bottom: 1.5px solid var(--border);
-  padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 8px; box-shadow: 0 2px 8px rgba(44,62,80,.06);
-}
-.topbar-logo { font-family: 'Fredoka One', sans-serif; font-size: 24px; color: var(--red); }
-.topbar-code { font-size: 12px; background: var(--red-light); color: var(--red); border: 1px solid var(--red-mid); border-radius: 20px; padding: 4px 12px; font-weight: 700; letter-spacing: 2px; cursor: pointer; }
-.topbar-info { font-size: 12px; color: var(--text2); }
+/* ── WAITING ── */
+#waiting{align-items:center;justify-content:center;padding:2rem;gap:1.5rem;}
+.code-box{font-family:monospace;font-size:clamp(2rem,10vw,3.5rem);font-weight:700;color:var(--blue);background:var(--white);padding:1rem 2.5rem;border-radius:18px;border:2px solid var(--noun-br);letter-spacing:10px;cursor:pointer;box-shadow:0 0 0 6px rgba(91,106,240,.06);}
+.code-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;text-align:center;margin-top:.4rem;}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.7rem;width:100%;max-width:500px;}
+.pchip{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:.7rem 1rem;display:flex;align-items:center;gap:.6rem;font-size:.9rem;font-weight:700;}
+.pchip .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--red));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
+.pchip.me{border-color:var(--blue);background:var(--blue-bg);}
+.wmsg{color:var(--muted);font-size:.9rem;font-weight:700;text-align:center;}
+.hbtns{display:none;flex-direction:column;gap:.6rem;width:100%;max-width:300px;}
+.gbtns{display:none;}
 
-.game-body { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 10px; max-width: 900px; margin: 0 auto; width: 100%; }
+/* ── GAME ── */
+#game{padding:1rem;gap:.7rem;max-width:980px;margin:0 auto;width:100%;}
+.ghead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
+.gtitle{font-size:1.2rem;font-weight:900;color:var(--blue);}
+.sbar-wrap{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;}
+.spill{background:var(--white);border:2px solid var(--border);border-radius:100px;padding:.4rem 1rem;font-size:.85rem;font-weight:800;display:flex;align-items:center;gap:.45rem;}
+.spill.turn{border-color:var(--blue);background:var(--blue-bg);}
+.spill .pts{font-family:monospace;color:var(--blue);}
 
-/* Players strip */
-.players-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
-.p-tag {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 8px 14px; border-radius: 12px; border: 1.5px solid var(--border);
-  background: var(--surface); min-width: 80px; flex-shrink: 0; transition: all .2s;
-}
-.p-tag.active { border-color: var(--green); background: var(--green-light); }
-.p-tag.me { border-color: var(--blue); }
-.p-tag-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
-.p-tag-count { font-size: 11px; color: var(--text2); }
-.p-tag-uno { font-size: 10px; color: var(--red); font-weight: 900; }
 
-/* Table */
-.table-area {
-  background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border);
-  padding: 16px; display: flex; gap: 24px; align-items: center; justify-content: center;
-  box-shadow: var(--shadow);
-}
-.pile-zone { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.pile-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
 
-/* ── CARDS ── */
-.card {
-  width: 80px; height: 115px; border-radius: 10px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  position: relative; border: 2px solid rgba(0,0,0,.12); flex-shrink: 0;
-  transition: transform .15s, box-shadow .15s;
-  cursor: default; user-select: none; font-family: 'Nunito', sans-serif;
-}
-.card-back {
-  background: linear-gradient(135deg, var(--red) 0%, #C0392B 100%);
-  color: white; cursor: pointer;
-}
-.card-back:hover { transform: scale(1.05); }
-.card-back-txt { font-family: 'Fredoka One', sans-serif; font-size: 18px; }
-.card-back-count { font-size: 11px; opacity: .8; margin-top: 4px; }
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.73rem;color:var(--muted);font-weight:700;}
+.legend span{display:flex;align-items:center;gap:.3rem;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.dot.noun{background:var(--noun);} .dot.adj{background:var(--adj);} .dot.verb{background:var(--verb);}
+.dot.reg{background:#43a047;} .dot.irr{background:#e53935;}
+.tbanner{text-align:center;padding:.65rem 1rem;border-radius:12px;font-size:.95rem;font-weight:800;border:2px solid var(--border);background:var(--white);}
+.tbanner.mine  {border-color:var(--blue);background:var(--blue-bg);color:var(--blue);}
+.tbanner.theirs{color:var(--muted);}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:.55rem;}
+.cw{aspect-ratio:2/3;perspective:800px;cursor:pointer;}
+.cw.matched{pointer-events:none;}
+.ci{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.34,1.15,.64,1);}
+.cw.flipped .ci,.cw.matched .ci{transform:rotateY(180deg);}
+.cf{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem;border:2px solid transparent;gap:.3rem;text-align:center;}
+.cb{background:linear-gradient(135deg,#5b6af0,#7c8cf8);overflow:hidden;}
+.cb::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.06) 10px,rgba(255,255,255,.06) 11px);}
+.cb-ico{font-size:1.8rem;position:relative;z-index:1;}
+.cf.noun{border-color:var(--noun-br);background:var(--noun-bg);transform:rotateY(180deg);}
+.cf.adj {border-color:var(--adj-br); background:var(--adj-bg); transform:rotateY(180deg);}
+.cf.verb{border-color:var(--verb-br);background:var(--verb-bg);transform:rotateY(180deg);}
+.cw.matched .cf{background:var(--green-bg)!important;border-color:var(--green)!important;}
+.cw.matched .cword{color:#00a07a;}
+.cbadge{font-size:.58rem;font-family:monospace;text-transform:uppercase;letter-spacing:1px;padding:.12rem .45rem;border-radius:100px;font-weight:700;}
+.cbadge.noun{background:#bbdefb;color:var(--noun);}
+.cbadge.adj {background:#ffe0b2;color:var(--adj);}
+.cbadge.verb{background:#e1bee7;color:var(--verb);}
+.tbadge{font-size:.55rem;font-family:monospace;text-transform:uppercase;padding:.1rem .4rem;border-radius:100px;font-weight:700;}
+.tbadge.regular  {background:#e8f5e9;color:#43a047;}
+.tbadge.irregular{background:#ffebee;color:#e53935;}
+.cword{font-size:clamp(.75rem,2vw,1rem);font-weight:900;line-height:1.2;word-break:break-word;}
+.chint{font-size:clamp(.52rem,1.5vw,.65rem);color:var(--muted);font-style:italic;line-height:1.3;}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0)}20%,60%{transform:rotateY(180deg) translateX(-5px)}40%,80%{transform:rotateY(180deg) translateX(5px)}}
+.cw.wrong .ci{animation:shake .4s ease;}
 
-.c-red    { background: var(--red-light);    border-color: var(--red);    color: var(--red); }
-.c-blue   { background: var(--blue-light);   border-color: var(--blue);   color: var(--blue); }
-.c-green  { background: var(--green-light);  border-color: var(--green);  color: var(--green); }
-.c-yellow { background: var(--yellow-light); border-color: var(--yellow); color: var(--yellow); }
-.c-wild   {
-  background: linear-gradient(135deg, var(--red-light) 25%, var(--blue-light) 25% 50%, var(--green-light) 50% 75%, var(--yellow-light) 75%);
-  border-color: #BDC3C7; color: var(--text);
-}
-.card-verb  { font-size: 10px; font-weight: 800; text-align: center; padding: 0 3px; line-height: 1.2; position: absolute; top: 18px; left: 0; right: 0; }
-.card-type  { font-size: 8px; font-weight: 600; opacity: .8; text-transform: uppercase; letter-spacing: .3px; position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; }
-.card-emoji { font-size: 30px; line-height: 1; }
-.card-sym   { font-size: 26px; font-weight: 900; line-height: 1; }
-.card-sym-sm { font-size: 10px; font-weight: 800; position: absolute; top: 4px; left: 5px; line-height: 1; }
-.card-sym-sm2 { font-size: 10px; font-weight: 800; position: absolute; bottom: 4px; right: 5px; transform: rotate(180deg); line-height: 1; }
+/* ── RESULTS ── */
+#results{align-items:center;justify-content:center;padding:2rem;gap:1.5rem;}
+.rcard{background:var(--white);border:2px solid var(--border);border-radius:18px;padding:2.5rem;width:100%;max-width:480px;text-align:center;display:flex;flex-direction:column;gap:1.4rem;box-shadow:0 4px 24px rgba(91,106,240,.10);}
+.rtrophy{font-size:4rem;}
+.rtitle{font-size:2rem;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--blue),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.podium{display:flex;flex-direction:column;gap:.6rem;}
+.prow{display:flex;align-items:center;background:var(--surface);border-radius:12px;padding:.8rem 1.2rem;border:2px solid var(--border);}
+.prow.win{border-color:var(--green);background:var(--green-bg);}
+.medal{font-size:1.2rem;width:28px;}
+.pname{flex:1;text-align:left;font-weight:800;padding:0 .8rem;}
+.pscore{font-family:monospace;font-weight:700;color:var(--blue);}
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;}
+.stat-box{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:.8rem .5rem;display:flex;flex-direction:column;align-items:center;gap:.2rem;}
+.stat-val{font-size:1.4rem;font-weight:900;color:var(--blue);font-family:monospace;}
+.stat-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;}
 
-/* Hand */
-.hand-section { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 14px; box-shadow: var(--shadow); }
-.hand-label { font-size: 13px; font-weight: 700; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-.hand-cards { display: flex; flex-wrap: wrap; gap: 6px; min-height: 120px; overflow-y: auto; max-height: 280px; -webkit-overflow-scrolling: touch; }
-
-.hcard {
-  width: 72px; height: 104px; border-radius: 8px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  position: relative; border: 2px solid rgba(0,0,0,.12); flex-shrink: 0;
-  transition: transform .15s, box-shadow .15s; cursor: pointer; user-select: none;
-  font-family: 'Nunito', sans-serif;
-}
-.hcard.playable { cursor: pointer; }
-.hcard.playable:hover { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,.15); }
-.hcard.unplayable { opacity: .45; cursor: default; }
-.hcard.unplayable:hover { transform: none; }
-
-/* Message bar */
-.msg-bar {
-  padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
-  background: var(--blue-light); color: var(--blue); border: 1.5px solid var(--blue-mid);
-  text-align: center;
-}
-.msg-bar.warn { background: var(--yellow-light); color: var(--yellow); border-color: var(--yellow-mid); }
-.msg-bar.success { background: var(--green-light); color: var(--green); border-color: var(--green-mid); }
-.msg-bar.danger { background: var(--red-light); color: var(--red); border-color: var(--red-mid); }
-
-/* Action bar */
-.action-bar { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn-sm {
-  padding: 10px 18px; border-radius: 10px; border: 1.5px solid var(--border);
-  background: var(--surface); color: var(--text); font-family: 'Nunito', sans-serif;
-  font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
-}
-.btn-sm:hover { background: var(--bg); border-color: var(--blue); color: var(--blue); }
-.btn-sm.primary { background: var(--blue); color: white; border-color: var(--blue); }
-.btn-sm.danger { background: var(--red); color: white; border-color: var(--red); }
-.btn-sm.uno { background: var(--red); color: white; border-color: var(--red); font-size: 14px; }
-.btn-sm:disabled { opacity: .4; cursor: default; transform: none; }
-
-/* Color picker */
-.color-picker-overlay {
-  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(44,62,80,.5);
-  z-index: 200; align-items: center; justify-content: center;
-}
-.color-picker-overlay.on { display: flex; }
-.color-picker-box {
-  background: white; border-radius: var(--radius); padding: 28px 32px;
-  text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.2); max-width: 340px; width: 90%;
-}
-.color-picker-box h3 { font-family: 'Fredoka One', sans-serif; font-size: 20px; color: var(--text); margin-bottom: 16px; }
-.color-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.c-btn { padding: 14px; border-radius: 10px; border: none; font-family: 'Fredoka One', sans-serif; font-size: 16px; cursor: pointer; transition: transform .15s; }
-.c-btn:hover { transform: scale(1.05); }
-.c-btn-red    { background: var(--red);    color: white; }
-.c-btn-blue   { background: var(--blue);   color: white; }
-.c-btn-green  { background: var(--green);  color: white; }
-.c-btn-yellow { background: var(--yellow); color: white; }
-
-/* Challenge overlay */
-.challenge-overlay {
-  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(44,62,80,.5);
-  z-index: 200; align-items: center; justify-content: center;
-}
-.challenge-overlay.on { display: flex; }
-.challenge-box {
-  background: white; border-radius: var(--radius); padding: 28px 32px;
-  text-align: center; max-width: 360px; width: 90%;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
-}
-.challenge-box h3 { font-family: 'Fredoka One', sans-serif; font-size: 20px; color: var(--yellow); margin-bottom: 8px; }
-.challenge-box p { font-size: 13px; color: var(--text2); margin-bottom: 16px; line-height: 1.6; }
-.challenge-btns { display: flex; gap: 10px; }
-
-/* Win overlay */
-.win-overlay {
-  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(44,62,80,.6);
-  z-index: 300; align-items: center; justify-content: center;
-}
-.win-overlay.on { display: flex; }
-.win-box {
-  background: white; border-radius: 24px; padding: 40px 48px;
-  text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,.2);
-}
-.win-emoji { font-size: 64px; margin-bottom: 12px; }
-.win-title { font-family: 'Fredoka One', sans-serif; font-size: 36px; color: var(--red); margin-bottom: 8px; }
-.win-sub { font-size: 16px; color: var(--text2); margin-bottom: 28px; }
-.win-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-
-/* Wait overlay */
-.wait-overlay {
-  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(244,246,249,.9);
-  z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
-}
-.wait-overlay.on { display: flex; }
-.wait-spin { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.wait-txt { font-family: 'Fredoka One', sans-serif; font-size: 18px; color: var(--text2); }
-
-/* Notification */
-.notif {
-  position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-80px);
-  background: var(--text); color: white; border-radius: 10px; padding: 10px 20px;
-  font-size: 14px; font-weight: 700; z-index: 500; transition: transform .3s; white-space: nowrap;
-}
-.notif.show { transform: translateX(-50%) translateY(0); }
-
-/* Responsive */
-@media (max-width: 480px) {
-  .card { width: 68px; height: 98px; }
-  .hcard { width: 62px; height: 90px; }
-  .card-verb { font-size: 10px; }
-  .card-sym { font-size: 22px; }
-}
-
-/* ── CROSS-PLATFORM FIXES ── */
-/* Remove tap highlight on iOS/Android */
-* { -webkit-tap-highlight-color: transparent; }
-/* Prevent text selection on cards */
-.card, .hcard { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
-/* iOS input styling reset */
-input, button { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
-/* Touch action: removes 300ms delay on Android */
-button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
-/* Momentum scroll for iOS on overflow containers */
-.players-strip, .hand-cards { -webkit-overflow-scrolling: touch; }
-/* Safe area for iPhone notch / home bar */
-.topbar { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-.game-body { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-/* Fix iOS input zoom (font-size must be >= 16px to prevent auto-zoom) */
-.inp { font-size: 16px !important; }
-/* Fix flex gap on older iOS Safari (14.4-) — already using flex-wrap so gap mostly works, add fallback margin */
-@supports not (gap: 8px) {
-  .room-cards > * { margin: 8px; }
-  .players-strip > * { margin-right: 8px; }
-  .hand-cards > * { margin: 3px; }
-  .action-bar > * { margin: 4px; }
-  .player-list > * { margin: 4px; }
-}
-/* Prevent iOS Safari rubber-band scroll on overlays */
-.color-picker-overlay, .challenge-overlay, .win-overlay, .wait-overlay {
-  -webkit-overflow-scrolling: auto;
-  overscroll-behavior: contain;
-}
-/* Better button active state for touch */
-.btn:active, .btn-sm:active, .c-btn:active { opacity: 0.85; transform: scale(0.97); }
-/* Fix notif position for notched phones */
-.notif { top: max(16px, env(safe-area-inset-top, 16px)); }
-/* Ensure text doesn't get clipped on small phones */
-@media (max-width: 360px) {
-  .card { width: 62px !important; height: 90px !important; }
-  .hcard { width: 56px !important; height: 82px !important; }
-  .card-emoji { font-size: 22px !important; }
-  .card-verb { font-size: 9px !important; }
-  .hand-label { flex-direction: column; gap: 8px; align-items: flex-start; }
-  .win-box { padding: 28px 20px; }
-  .win-title { font-size: 26px; }
-}
-
-/* ── QUIZ OVERLAY ── */
-.quiz-overlay {
-  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0;
-  background: rgba(44,62,80,.6); z-index: 250;
-  align-items: center; justify-content: center;
-  -webkit-overflow-scrolling: auto; overscroll-behavior: contain;
-}
-.quiz-overlay.on { display: flex; }
-.quiz-box {
-  background: white; border-radius: 20px; padding: 22px 20px;
-  max-width: 340px; width: 92%; box-shadow: 0 24px 80px rgba(0,0,0,.25);
-}
-.quiz-card-preview {
-  border-radius: 12px; padding: 12px 10px; display: flex; flex-direction: column;
-  align-items: center; gap: 3px; margin-bottom: 14px; position: relative;
-  border: 2px solid; min-height: 90px; justify-content: center;
-}
-.quiz-card-preview .qcp-dot { position: absolute; top: 5px; left: 8px; font-size: 12px; }
-.quiz-card-preview .qcp-emoji { font-size: 32px; line-height: 1; }
-.quiz-card-preview .qcp-verb { font-size: 17px; font-weight: 900; }
-.quiz-card-preview .qcp-tense { position: absolute; bottom: 5px; right: 0; left: 0; text-align: center; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; opacity: .8; }
-.quiz-question { font-size: 13px; color: #7F8C8D; margin-bottom: 4px; }
-.quiz-verb-big { font-family: 'Fredoka One', sans-serif; font-size: 22px; color: #2C3E50; margin-bottom: 14px; }
-.quiz-opt {
-  display: block; width: 100%; padding: 13px 16px; border-radius: 12px;
-  border: 2px solid #DDE3EC; background: white;
-  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
-  color: #2C3E50; margin-bottom: 9px; cursor: pointer; text-align: left;
-  transition: border-color .15s, background .15s;
-  touch-action: manipulation; -webkit-appearance: none; appearance: none;
-}
-.quiz-opt:last-child { margin-bottom: 0; }
-.quiz-opt:hover { border-color: #2980B9; background: #EAF4FB; color: #185FA5; }
-.quiz-opt.correct { background: #EAFAF1; border-color: #27AE60; color: #1E8449; pointer-events: none; }
-.quiz-opt.wrong   { background: #FDECEB; border-color: #E74C3C; color: #C0392B; pointer-events: none; }
-.quiz-opt.dimmed  { opacity: .35; pointer-events: none; }
-.quiz-feedback {
-  border-radius: 10px; padding: 11px 14px; font-size: 13px; font-weight: 700;
-  text-align: center; margin-top: 12px;
-}
-.quiz-feedback.ok   { background: #EAFAF1; color: #1E8449; border: 1.5px solid #27AE60; }
-.quiz-feedback.fail { background: #FDECEB; color: #C0392B; border: 1.5px solid #E74C3C; }
+/* ── TOAST ── */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);border-radius:100px;padding:.7rem 1.6rem;font-size:.9rem;font-weight:800;z-index:999;transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;border:2px solid transparent;}
+#toast.on {transform:translateX(-50%) translateY(0);opacity:1;}
+#toast.ok  {background:var(--green-bg);border-color:var(--green);color:#00a07a;}
+#toast.err {background:var(--red-bg);  border-color:#ffc0c8;     color:var(--red);}
+#toast.inf {background:var(--blue-bg); border-color:var(--noun-br);color:var(--blue);}
+@media(max-width:480px){.grid{grid-template-columns:repeat(5,1fr);gap:.35rem;}.cword{font-size:.68rem;}.chint{font-size:.5rem;}}
 </style>
 </head>
 <body>
 
-<!-- ══════════ ROOM SCREEN ══════════ -->
-<div id="room-screen">
-  <div class="room-logo">UNO</div>
-  <div class="room-sub">🔤 Irregular Verbs</div>
-
-  <div class="room-cards">
-    <!-- HOST -->
-    <div class="room-card">
-      <div class="room-card-title host">🎙 I am the Host (Teacher)</div>
-      <input class="inp" id="host-name" placeholder="Your name" maxlength="20" autocorrect="off">
-      <button class="btn btn-red" onclick="createRoom()">Create room</button>
-      <div class="err-msg" id="host-err"></div>
+<!-- ══ LOBBY ══ -->
+<div id="lobby" class="screen on">
+  <div class="logo"><h1>WordMatch</h1><p>English Memory Game</p></div>
+  <div class="card">
+    <h2>🎮 Solo / Local Game</h2>
+    <div>
+      <label>Your Name</label>
+      <input type="text" id="solo-name" placeholder="Enter your name" maxlength="20">
     </div>
-    <!-- JOIN -->
-    <div class="room-card">
-      <div class="room-card-title join">🎮 Join as a Player</div>
-      <input class="inp" id="join-name" placeholder="Your name" maxlength="20" autocorrect="off">
-      <input class="inp code" id="join-code" placeholder="ROOM CODE" maxlength="6" autocorrect="off" autocapitalize="characters" oninput="this.value=this.value.toUpperCase()">
-      <button class="btn btn-blue" onclick="joinRoom()">Join</button>
-      <div class="err-msg" id="join-err"></div>
-    </div>
-  </div>
-
-  <div style="max-width:440px;width:100%;background:white;border-radius:14px;border:1.5px solid var(--border);padding:18px 20px;font-size:13px;color:var(--text2);line-height:1.7;box-shadow:var(--shadow)">
-    <strong style="color:var(--text);font-size:14px;">📋 Quick rules</strong><br>
-    Play a card that matches in <b>color</b> or <b>verb tense</b>.<br>
-    Special cards: <b>Skip</b>, <b>Reverse</b>, <b>+2</b>, <b>Wild</b>, <b>Wild +4</b>.<br>
-    Say <b>UNO!</b> when you have 1 card left, or draw 5.
-  </div>
-</div>
-
-<!-- ══════════ LOBBY SCREEN ══════════ -->
-<div id="lobby-screen">
-  <div style="height:24px"></div>
-  <div class="lobby-box">
-    <div class="lobby-title" id="lobby-title">Room created</div>
-    <div id="lobby-code-area" style="display:none">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:4px;">Share this code with your students:</p>
-      <div class="code-badge" id="lobby-code-badge" onclick="copyCode()" title="Click to copy">——</div>
-    </div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;" id="lobby-status">Waiting for players...</p>
-    <div class="player-list" id="lobby-players"></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px">
-      <button class="btn btn-red" id="btn-start" style="display:none;max-width:200px" onclick="hostStartGame()">▶ Start game</button>
-      <button class="btn btn-gray" style="max-width:160px" onclick="leaveRoom()">Leave</button>
-    </div>
-    <div class="err-msg" id="lobby-err"></div>
-  </div>
-</div>
-
-<!-- ══════════ GAME SCREEN ══════════ -->
-<div id="game-screen">
-  <div class="topbar">
-    <div class="topbar-logo">UNO</div>
-    <div class="topbar-code" id="tb-code" onclick="copyCode()" title="Click to copy code">——</div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button id="btn-sound" onclick="toggleSound()" title="Toggle pronunciation" style="background:var(--green-light);color:var(--green);border:1px solid var(--green-mid);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">🔊 Sound</button>
-      <div class="topbar-info" id="tb-turn">Loading...</div>
-    </div>
-  </div>
-
-  <div class="game-body">
-    <div class="players-strip" id="players-strip"></div>
-    <div class="msg-bar" id="msg-bar">Starting...</div>
-    <div class="table-area">
-      <div class="pile-zone">
-        <div class="pile-label">Deck</div>
-        <div class="card card-back" id="draw-pile" onclick="onDrawCard()">
-          <div class="card-back-txt">UNO</div>
-          <div class="card-back-count" id="deck-count">—</div>
-        </div>
-      </div>
-      <div class="pile-zone">
-        <div class="pile-label">Discard</div>
-        <div id="discard-top" style="width:80px;height:115px"></div>
+    <div>
+      <label>Word Categories</label>
+      <div class="cats">
+        <button type="button" class="cat noun on" data-cat="nouns"><span>📘</span>Nouns</button>
+        <button type="button" class="cat adj  on" data-cat="adjectives"><span>🟠</span>Adj</button>
+        <button type="button" class="cat verb on" data-cat="verbs"><span>🟣</span>Verbs</button>
       </div>
     </div>
-
-    <div class="hand-section">
-      <div class="hand-label">
-        <span id="hand-title">Your hand</span>
-        <div class="action-bar">
-          <button class="btn-sm uno" onclick="callUno()">🔔 UNO!</button>
-          <button class="btn-sm" id="btn-pass" onclick="passTurn()">Pass turn</button>
-          <button class="btn-sm" id="btn-host-skip" onclick="hostSkipPlayer()" style="display:none;background:var(--yellow-light);color:var(--yellow);border-color:var(--yellow-mid)" title="Skip stuck player (host only)">⏭ Skip player</button>
-          <button class="btn-sm" style="font-size:11px;color:var(--text2)" onclick="leaveRoom()">Leave</button>
-        </div>
-      </div>
-      <div class="hand-cards" id="hand-cards"></div>
+    <div>
+      <label>Number of Pairs</label>
+      <input type="number" id="pair-count" value="8" min="4" max="30">
+    </div>
+    <button type="button" class="btn btn-blue" id="btn-solo">✨ Play Solo</button>
+    <hr>
+    <h2>🌐 Online Multiplayer</h2>
+    <div>
+      <label>Your Name</label>
+      <input type="text" id="mp-name" placeholder="Enter your name" maxlength="20">
+    </div>
+    <button type="button" class="btn btn-green" id="btn-create">🏠 Create Room</button>
+    <div class="join-row">
+      <input type="text" id="room-code-input" placeholder="ROOM CODE" maxlength="6">
+      <button type="button" class="btn btn-gray" id="btn-join" style="width:auto;padding:.8rem 1.2rem;">Join →</button>
+    </div>
+    <div id="fb-banner" style="display:none;background:#fff3e0;color:#e65100;border:2px solid #ffb74d;border-radius:10px;padding:.8rem 1rem;font-size:.82rem;font-weight:700;text-align:center;line-height:1.5;">
+      🔧 <strong>Online mode needs Firebase.</strong><br>
+      Open this file, find <code style="background:#ffe0b2;padding:.1rem .3rem;border-radius:4px;">FB_CONFIG_READY</code> and set it to <code style="background:#ffe0b2;padding:.1rem .3rem;border-radius:4px;">true</code> after adding your credentials.
     </div>
   </div>
 </div>
 
-<!-- ══════════ OVERLAYS ══════════ -->
-
-<!-- ══════════ QUIZ OVERLAY ══════════ -->
-<div class="quiz-overlay" id="quiz-overlay">
-  <div class="quiz-box">
-    <div class="quiz-card-preview" id="qcp"></div>
-    <div class="quiz-question" id="quiz-q"></div>
-    <div class="quiz-verb-big" id="quiz-verb-big"></div>
-    <div id="quiz-opts"></div>
-    <div class="quiz-feedback" id="quiz-feedback" style="display:none"></div>
+<!-- ══ WAITING ══ -->
+<div id="waiting" class="screen">
+  <div style="text-align:center">
+    <p style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.5rem">Room Code</p>
+    <div class="code-box" id="code-display">----</div>
+    <div class="code-label">Tap to copy · share with friends</div>
+  </div>
+  <p style="font-size:.85rem;color:var(--muted);font-weight:700">Players in Room</p>
+  <div class="plist" id="plist"></div>
+  <p class="wmsg" id="wmsg">Waiting for players…</p>
+  <div class="hbtns" id="hbtns">
+    <button type="button" class="btn btn-green" id="btn-start">▶ Start Game</button>
+    <button type="button" class="btn btn-red"   id="btn-leave-h">Leave Room</button>
+  </div>
+  <div class="gbtns" id="gbtns">
+    <button type="button" class="btn btn-red" id="btn-leave-g">Leave Room</button>
   </div>
 </div>
 
+<!-- ══ GAME ══ -->
+<div id="game" class="screen">
+  <div class="ghead">
+    <span class="gtitle">⚡ WordMatch</span>
+    <div class="sbar-wrap">
+      <div id="sbar"></div>
+      <button type="button" class="btn btn-orange" id="btn-skip" disabled>⏭ Skip</button>
+      <button type="button" class="btn btn-gray" id="btn-quit" style="width:auto;padding:.55rem 1rem;font-size:.88rem;">🏠 Quit</button>
+    </div>
+  </div>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="tbanner mine" id="tbanner">✨ Your turn! Flip two cards.</div>
+  <div class="grid" id="grid"></div>
+</div>
 
-<div class="color-picker-overlay" id="color-overlay">
-  <div class="color-picker-box">
-    <h3>Choose a color</h3>
-    <div class="color-btns">
-      <button class="c-btn c-btn-red"    onclick="chooseColor('red')">🔴 Red</button>
-      <button class="c-btn c-btn-blue"   onclick="chooseColor('blue')">🔵 Blue</button>
-      <button class="c-btn c-btn-green"  onclick="chooseColor('green')">🟢 Green</button>
-      <button class="c-btn c-btn-yellow" onclick="chooseColor('yellow')">🟡 Yellow</button>
+<!-- ══ RESULTS ══ -->
+<div id="results" class="screen">
+  <div class="rcard">
+    <div class="rtrophy" id="rtrophy">🏆</div>
+    <div class="rtitle"  id="rtitle">You Win!</div>
+    <div class="podium"  id="podium"></div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      <button type="button" class="btn btn-blue" id="btn-again">🔄 Play Again</button>
+      <button type="button" class="btn btn-gray" id="btn-lobby">🏠 Back to Lobby</button>
     </div>
   </div>
 </div>
 
-<div class="challenge-overlay" id="challenge-overlay">
-  <div class="challenge-box">
-    <h3>⚠️ Wild +4</h3>
-    <p id="challenge-txt">The previous player played a Wild +4 on you.<br>Do you want to challenge them?<br><small>If they had another playable card: they draw 4. If not: you draw 6.</small></p>
-    <div class="challenge-btns">
-      <button class="btn-sm primary" style="flex:1" onclick="resolveChallenge(true)">✅ Challenge</button>
-      <button class="btn-sm danger"  style="flex:1" onclick="resolveChallenge(false)">Accept +4</button>
-    </div>
-  </div>
-</div>
+<div id="toast"></div>
 
-<div class="win-overlay" id="win-overlay">
-  <div class="win-box">
-    <div class="win-emoji">🎉</div>
-    <div class="win-title" id="win-name">Winner!</div>
-    <div class="win-sub">ran out of cards first</div>
-    <div class="win-btns">
-      <button class="btn btn-red" style="max-width:180px" onclick="restartGame()">🔄 Play again</button>
-      <button class="btn btn-gray" style="max-width:140px" onclick="leaveRoom()">Menu</button>
-    </div>
-  </div>
-</div>
-
-<div class="wait-overlay" id="wait-overlay">
-  <div class="wait-spin"></div>
-  <div class="wait-txt" id="wait-txt">Connecting...</div>
-</div>
-
-<div class="notif" id="notif"></div>
-
-<!-- Firebase v8 compat from jsDelivr — fallback to unpkg if needed -->
-<script>
-function _firebaseLoadError() {
-  document.body.innerHTML = '<div style="padding:32px;font-family:sans-serif;color:#E74C3C"><h2>Connection error</h2><p>Could not load Firebase. Check your internet and reload.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#E74C3C;color:white;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
-}
-</script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js" onerror="_firebaseLoadError()"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-database.js" onerror="_firebaseLoadError()"></script>
+<!-- Firebase SDKs (loaded before main script, errors caught gracefully) -->
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js" onerror="window._fbErr=true"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-database.js" onerror="window._fbErr=true"></script>
 
 <script>
-// ═══════════════════════════════════════
-// FIREBASE INIT
-// ═══════════════════════════════════════
-var db;
-try {
-  if (typeof firebase === 'undefined') throw new Error('Firebase SDK not loaded. Check internet connection.');
-  firebase.initializeApp({
-    apiKey:            "AIzaSyCDCVxdCFz3ahan9TY49nNL3gOAA9Gvi8k",
-    authDomain:        "bingo-irr-verbs.firebaseapp.com",
-    databaseURL:       "https://bingo-irr-verbs-default-rtdb.firebaseio.com",
-    projectId:         "bingo-irr-verbs",
-    storageBucket:     "bingo-irr-verbs.firebasestorage.app",
-    messagingSenderId: "675589699924",
-    appId:             "1:675589699924:web:1019a3859483fdff64b0c1"
-  });
-  db = firebase.database();
-} catch(err) {
-  document.body.innerHTML = '<div style="padding:32px;font-family:sans-serif;color:#E74C3C"><h2>Firebase error</h2><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#E74C3C;color:white;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
-}
-
-// ═══════════════════════════════════════
-// VERB DATA
-// ═══════════════════════════════════════
-const VERBS = [
-  {b:"awake",p:"awoke",pp:"awoken",g:"awaking"},
-  {b:"be",p:"was/were",pp:"been",g:"being"},
-  {b:"beat",p:"beat",pp:"beaten",g:"beating"},
-  {b:"become",p:"became",pp:"become",g:"becoming"},
-  {b:"begin",p:"began",pp:"begun",g:"beginning"},
-  {b:"bend",p:"bent",pp:"bent",g:"bending"},
-  {b:"bet",p:"bet",pp:"bet",g:"betting"},
-  {b:"bite",p:"bit",pp:"bitten",g:"biting"},
-  {b:"bleed",p:"bled",pp:"bled",g:"bleeding"},
-  {b:"break",p:"broke",pp:"broken",g:"breaking"},
-  {b:"bring",p:"brought",pp:"brought",g:"bringing"},
-  {b:"build",p:"built",pp:"built",g:"building"},
-  {b:"buy",p:"bought",pp:"bought",g:"buying"},
-  {b:"catch",p:"caught",pp:"caught",g:"catching"},
-  {b:"choose",p:"chose",pp:"chosen",g:"choosing"},
-  {b:"come",p:"came",pp:"come",g:"coming"},
-  {b:"cost",p:"cost",pp:"cost",g:"costing"},
-  {b:"cut",p:"cut",pp:"cut",g:"cutting"},
-  {b:"dig",p:"dug",pp:"dug",g:"digging"},
-  {b:"do",p:"did",pp:"done",g:"doing"},
-  {b:"draw",p:"drew",pp:"drawn",g:"drawing"},
-  {b:"drink",p:"drank",pp:"drunk",g:"drinking"},
-  {b:"drive",p:"drove",pp:"driven",g:"driving"},
-  {b:"eat",p:"ate",pp:"eaten",g:"eating"},
-  {b:"fall",p:"fell",pp:"fallen",g:"falling"},
-  {b:"feed",p:"fed",pp:"fed",g:"feeding"},
-  {b:"feel",p:"felt",pp:"felt",g:"feeling"},
-  {b:"fight",p:"fought",pp:"fought",g:"fighting"},
-  {b:"find",p:"found",pp:"found",g:"finding"},
-  {b:"fly",p:"flew",pp:"flown",g:"flying"},
-  {b:"forget",p:"forgot",pp:"forgotten",g:"forgetting"},
-  {b:"forgive",p:"forgave",pp:"forgiven",g:"forgiving"},
-  {b:"freeze",p:"froze",pp:"frozen",g:"freezing"},
-  {b:"get",p:"got",pp:"gotten",g:"getting"},
-  {b:"give",p:"gave",pp:"given",g:"giving"},
-  {b:"go",p:"went",pp:"gone",g:"going"},
-  {b:"grow",p:"grew",pp:"grown",g:"growing"},
-  {b:"hang",p:"hung",pp:"hung",g:"hanging"},
-  {b:"have",p:"had",pp:"had",g:"having"},
-  {b:"hear",p:"heard",pp:"heard",g:"hearing"},
-  {b:"hide",p:"hid",pp:"hidden",g:"hiding"},
-  {b:"hit",p:"hit",pp:"hit",g:"hitting"},
-  {b:"hold",p:"held",pp:"held",g:"holding"},
-  {b:"hurt",p:"hurt",pp:"hurt",g:"hurting"},
-  {b:"keep",p:"kept",pp:"kept",g:"keeping"},
-  {b:"know",p:"knew",pp:"known",g:"knowing"},
-  {b:"lead",p:"led",pp:"led",g:"leading"},
-  {b:"leave",p:"left",pp:"left",g:"leaving"},
-  {b:"lend",p:"lent",pp:"lent",g:"lending"},
-  {b:"let",p:"let",pp:"let",g:"letting"},
-  {b:"lie",p:"lay",pp:"lain",g:"lying"},
-  {b:"lose",p:"lost",pp:"lost",g:"losing"},
-  {b:"make",p:"made",pp:"made",g:"making"},
-  {b:"mean",p:"meant",pp:"meant",g:"meaning"},
-  {b:"meet",p:"met",pp:"met",g:"meeting"},
-  {b:"pay",p:"paid",pp:"paid",g:"paying"},
-  {b:"put",p:"put",pp:"put",g:"putting"},
-  {b:"read",p:"read",pp:"read",g:"reading"},
-  {b:"ride",p:"rode",pp:"ridden",g:"riding"},
-  {b:"ring",p:"rang",pp:"rung",g:"ringing"},
-  {b:"rise",p:"rose",pp:"risen",g:"rising"},
-  {b:"run",p:"ran",pp:"run",g:"running"},
-  {b:"say",p:"said",pp:"said",g:"saying"},
-  {b:"see",p:"saw",pp:"seen",g:"seeing"},
-  {b:"seek",p:"sought",pp:"sought",g:"seeking"},
-  {b:"sell",p:"sold",pp:"sold",g:"selling"},
-  {b:"send",p:"sent",pp:"sent",g:"sending"},
-  {b:"set",p:"set",pp:"set",g:"setting"},
-  {b:"shake",p:"shook",pp:"shaken",g:"shaking"},
-  {b:"shine",p:"shone",pp:"shone",g:"shining"},
-  {b:"shoot",p:"shot",pp:"shot",g:"shooting"},
-  {b:"show",p:"showed",pp:"shown",g:"showing"},
-  {b:"sing",p:"sang",pp:"sung",g:"singing"},
-  {b:"sink",p:"sank",pp:"sunk",g:"sinking"},
-  {b:"sit",p:"sat",pp:"sat",g:"sitting"},
-  {b:"sleep",p:"slept",pp:"slept",g:"sleeping"},
-  {b:"slide",p:"slid",pp:"slid",g:"sliding"},
-  {b:"speak",p:"spoke",pp:"spoken",g:"speaking"},
-  {b:"spend",p:"spent",pp:"spent",g:"spending"},
-  {b:"spin",p:"spun",pp:"spun",g:"spinning"},
-  {b:"split",p:"split",pp:"split",g:"splitting"},
-  {b:"stand",p:"stood",pp:"stood",g:"standing"},
-  {b:"steal",p:"stole",pp:"stolen",g:"stealing"},
-  {b:"sweep",p:"swept",pp:"swept",g:"sweeping"},
-  {b:"swim",p:"swam",pp:"swum",g:"swimming"},
-  {b:"take",p:"took",pp:"taken",g:"taking"},
-  {b:"teach",p:"taught",pp:"taught",g:"teaching"},
-  {b:"tell",p:"told",pp:"told",g:"telling"},
-  {b:"think",p:"thought",pp:"thought",g:"thinking"},
-  {b:"throw",p:"threw",pp:"thrown",g:"throwing"},
-  {b:"understand",p:"understood",pp:"understood",g:"understanding"},
-  {b:"wake",p:"woke",pp:"woken",g:"waking"},
-  {b:"wear",p:"wore",pp:"worn",g:"wearing"},
-  {b:"weep",p:"wept",pp:"wept",g:"weeping"},
-  {b:"win",p:"won",pp:"won",g:"winning"},
-  {b:"write",p:"wrote",pp:"written",g:"writing"}
-];
-
-const TYPES = ['b','p','pp','g'];
-const TYPE_LABELS = {b:'Base',p:'Simple Past',pp:'Past Participle',g:'Gerund'};
-
-const VERB_EMOJI = {
-  awake:'😴', be:'🧑', beat:'🥁', become:'🦋', begin:'🚀', bend:'🤸',
-  bet:'🎲', bite:'🦷', bleed:'🩸', break:'💥', bring:'📦', build:'🏗️',
-  buy:'🛒', catch:'🫳', choose:'🤔', come:'🚶', cost:'💰', cut:'✂️',
-  dig:'⛏️', do:'✅', draw:'✏️', drink:'🥤', drive:'🚗', eat:'🍽️',
-  fall:'🍂', feed:'🍼', feel:'❤️', fight:'🥊', find:'🔍', fly:'✈️',
-  forget:'🙈', forgive:'🕊️', freeze:'🧊', get:'🤲', give:'🎁', go:'🏃',
-  grow:'🌱', hang:'🪝', have:'👐', hear:'👂', hide:'🙈', hit:'💫',
-  hold:'🫶', hurt:'🤕', keep:'🔒', know:'🧠', lead:'👑', leave:'🚪',
-  lend:'🤝', let:'🔓', lie:'🛏️', lose:'😔', make:'🔨', mean:'💬',
-  meet:'🤝', pay:'💳', put:'📌', read:'📖', ride:'🐎', ring:'🔔',
-  rise:'🌅', run:'🏃', say:'💬', see:'👁️', seek:'🔎', sell:'🏷️',
-  send:'📩', set:'⚙️', shake:'🫨', shine:'☀️', shoot:'🎯', show:'🎪',
-  sing:'🎵', sink:'⚓', sit:'🪑', sleep:'😴', slide:'🛝', speak:'🗣️',
-  spend:'💸', spin:'🌀', split:'⚡', stand:'🧍', steal:'🦊', sweep:'🧹',
-  swim:'🏊', take:'🫴', teach:'👩‍🏫', tell:'📢', think:'💭', throw:'🎳',
-  understand:'🤓', wake:'⏰', wear:'👕', weep:'😢', win:'🏆', write:'📝',
-  ring:'🔔', send:'📩'
+/* ════════════════════════════════════════════════
+   FIREBASE CONFIG  —  replace with your own
+   ════════════════════════════════════════════════ */
+var FB_CONFIG_READY = true; /* set to true after adding real credentials */
+var FB_CONFIG = {
+  apiKey:            "AIzaSyBehA3C7DtV-tURS49QDFirk0XTWOvmOzE",
+  authDomain:        "memorygame-c4b7b.firebaseapp.com",
+  databaseURL:       "https://memorygame-c4b7b-default-rtdb.firebaseio.com",
+  projectId:         "memorygame-c4b7b",
+  storageBucket:     "memorygame-c4b7b.firebasestorage.app",
+  messagingSenderId: "650580592682",
+  appId:             "1:650580592682:web:48a7ff98ba3ff6bf6f9b53",
+  measurementId:     "G-1J4061CSRH"
 };
-const COLORS = ['red','blue','green','yellow'];
-const COLOR_NAMES = {red:'🔴 Red',blue:'🔵 Blue',green:'🟢 Green',yellow:'🟡 Yellow'};
 
-// ═══════════════════════════════════════
-// SPEECH / PRONUNCIATION
-// ═══════════════════════════════════════
-let speechEnabled = true;
+/* ════════════════════════════════════════════════
+   WORD BANK
+   ════════════════════════════════════════════════ */
+var WORDS = {
+  nouns:[
+    {w:"child",  h:"young human",       m:"children", mh:"plural",t:"irregular"},
+    {w:"foot",   h:"lower body part",   m:"feet",     mh:"plural",t:"irregular"},
+    {w:"tooth",  h:"in your mouth",     m:"teeth",    mh:"plural",t:"irregular"},
+    {w:"mouse",  h:"small rodent",      m:"mice",     mh:"plural",t:"irregular"},
+    {w:"person", h:"a human being",     m:"people",   mh:"plural",t:"irregular"},
+    {w:"goose",  h:"large water bird",  m:"geese",    mh:"plural",t:"irregular"},
+    {w:"man",    h:"adult male",        m:"men",      mh:"plural",t:"irregular"},
+    {w:"woman",  h:"adult female",      m:"women",    mh:"plural",t:"irregular"},
+    {w:"ox",     h:"farm animal",       m:"oxen",     mh:"plural",t:"irregular"},
+    {w:"leaf",   h:"part of a tree",    m:"leaves",   mh:"plural",t:"irregular"},
+    {w:"knife",  h:"cutting tool",      m:"knives",   mh:"plural",t:"irregular"},
+    {w:"wolf",   h:"wild canine",       m:"wolves",   mh:"plural",t:"irregular"},
+    {w:"cactus", h:"desert plant",      m:"cacti",    mh:"plural",t:"irregular"},
+    {w:"crisis", h:"dangerous moment",  m:"crises",   mh:"plural",t:"irregular"},
+    {w:"datum",  h:"single data point", m:"data",     mh:"plural",t:"irregular"},
+    {w:"book",   h:"you read it",       m:"books",    mh:"plural",t:"regular"},
+    {w:"box",    h:"a container",       m:"boxes",    mh:"plural",t:"regular"},
+    {w:"bus",    h:"public transport",  m:"buses",    mh:"plural",t:"regular"},
+    {w:"city",   h:"urban area",        m:"cities",   mh:"plural",t:"regular"},
+    {w:"family", h:"parents+children",  m:"families", mh:"plural",t:"regular"},
+    {w:"story",  h:"a narrative",       m:"stories",  mh:"plural",t:"regular"},
+    {w:"dish",   h:"plate for food",    m:"dishes",   mh:"plural",t:"regular"},
+    {w:"baby",   h:"very young child",  m:"babies",   mh:"plural",t:"regular"},
+    {w:"dog",    h:"common pet",        m:"dogs",     mh:"plural",t:"regular"},
+    {w:"church", h:"worship place",     m:"churches", mh:"plural",t:"regular"},
+    {w:"class",  h:"group of students", m:"classes",  mh:"plural",t:"regular"},
+    {w:"bench",  h:"long seat",         m:"benches",  mh:"plural",t:"regular"},
+    {w:"brush",  h:"for hair or paint", m:"brushes",  mh:"plural",t:"regular"},
+    {w:"match",  h:"game or fire stick",m:"matches",  mh:"plural",t:"regular"},
+    {w:"watch",  h:"worn to tell time", m:"watches",  mh:"plural",t:"regular"}
+  ],
+  adjectives:[
+    {w:"good",    h:"positive quality",  m:"better",   mh:"comparative",t:"irregular"},
+    {w:"bad",     h:"negative quality",  m:"worse",    mh:"comparative",t:"irregular"},
+    {w:"far",     h:"distant",           m:"farther",  mh:"comparative",t:"irregular"},
+    {w:"much",    h:"large amount",      m:"more",     mh:"comparative",t:"irregular"},
+    {w:"little",  h:"small amount",      m:"less",     mh:"comparative",t:"irregular"},
+    {w:"old",     h:"not new",           m:"elder",    mh:"comparative",t:"irregular"},
+    {w:"late",    h:"not on time",       m:"latter",   mh:"comparative",t:"irregular"},
+    {w:"tall",    h:"high stature",      m:"taller",   mh:"comparative",t:"regular"},
+    {w:"short",   h:"not tall",          m:"shorter",  mh:"comparative",t:"regular"},
+    {w:"fast",    h:"high speed",        m:"faster",   mh:"comparative",t:"regular"},
+    {w:"slow",    h:"low speed",         m:"slower",   mh:"comparative",t:"regular"},
+    {w:"smart",   h:"intelligent",       m:"smarter",  mh:"comparative",t:"regular"},
+    {w:"clean",   h:"not dirty",         m:"cleaner",  mh:"comparative",t:"regular"},
+    {w:"warm",    h:"slightly hot",      m:"warmer",   mh:"comparative",t:"regular"},
+    {w:"cold",    h:"low temperature",   m:"colder",   mh:"comparative",t:"regular"},
+    {w:"young",   h:"not old",           m:"younger",  mh:"comparative",t:"regular"},
+    {w:"bright",  h:"shining, vivid",    m:"brighter", mh:"comparative",t:"regular"},
+    {w:"cheap",   h:"low price",         m:"cheaper",  mh:"comparative",t:"regular"},
+    {w:"thick",   h:"not thin",          m:"thicker",  mh:"comparative",t:"regular"},
+    {w:"long",    h:"not short (length)",m:"longer",   mh:"comparative",t:"regular"},
+    {w:"strong",  h:"physically powerful",m:"stronger",mh:"comparative",t:"regular"},
+    {w:"weak",    h:"not strong",        m:"weaker",   mh:"comparative",t:"regular"},
+    {w:"wide",    h:"broad",             m:"wider",    mh:"comparative",t:"regular"},
+    {w:"deep",    h:"far down",          m:"deeper",   mh:"comparative",t:"regular"},
+    {w:"dark",    h:"without light",     m:"darker",   mh:"comparative",t:"regular"},
+    {w:"light",   h:"not heavy",         m:"lighter",  mh:"comparative",t:"regular"},
+    {w:"loud",    h:"high volume",       m:"louder",   mh:"comparative",t:"regular"},
+    {w:"soft",    h:"not hard",          m:"softer",   mh:"comparative",t:"regular"},
+    {w:"hard",    h:"not soft",          m:"harder",   mh:"comparative",t:"regular"},
+    {w:"sweet",   h:"sugary taste",      m:"sweeter",  mh:"comparative",t:"regular"}
+  ],
+  verbs:[
+    {w:"go",    h:"to move away",        m:"went",    mh:"past tense",t:"irregular"},
+    {w:"eat",   h:"to consume food",     m:"ate",     mh:"past tense",t:"irregular"},
+    {w:"run",   h:"to sprint",           m:"ran",     mh:"past tense",t:"irregular"},
+    {w:"see",   h:"to look at",          m:"saw",     mh:"past tense",t:"irregular"},
+    {w:"give",  h:"to offer",            m:"gave",    mh:"past tense",t:"irregular"},
+    {w:"take",  h:"to grab",             m:"took",    mh:"past tense",t:"irregular"},
+    {w:"come",  h:"to arrive",           m:"came",    mh:"past tense",t:"irregular"},
+    {w:"know",  h:"to be aware of",      m:"knew",    mh:"past tense",t:"irregular"},
+    {w:"think", h:"to ponder",           m:"thought", mh:"past tense",t:"irregular"},
+    {w:"speak", h:"to talk",             m:"spoke",   mh:"past tense",t:"irregular"},
+    {w:"break", h:"to shatter",          m:"broke",   mh:"past tense",t:"irregular"},
+    {w:"bring", h:"to carry here",       m:"brought", mh:"past tense",t:"irregular"},
+    {w:"buy",   h:"to purchase",         m:"bought",  mh:"past tense",t:"irregular"},
+    {w:"catch", h:"to grab in motion",   m:"caught",  mh:"past tense",t:"irregular"},
+    {w:"draw",  h:"to sketch",           m:"drew",    mh:"past tense",t:"irregular"},
+    {w:"drink", h:"swallow liquid",      m:"drank",   mh:"past tense",t:"irregular"},
+    {w:"drive", h:"operate a car",       m:"drove",   mh:"past tense",t:"irregular"},
+    {w:"fall",  h:"to drop down",        m:"fell",    mh:"past tense",t:"irregular"},
+    {w:"feel",  h:"to sense",            m:"felt",    mh:"past tense",t:"irregular"},
+    {w:"find",  h:"to locate",           m:"found",   mh:"past tense",t:"irregular"},
+    {w:"fly",   h:"to soar",             m:"flew",    mh:"past tense",t:"irregular"},
+    {w:"grow",  h:"to get bigger",       m:"grew",    mh:"past tense",t:"irregular"},
+    {w:"hold",  h:"to grip",             m:"held",    mh:"past tense",t:"irregular"},
+    {w:"keep",  h:"to retain",           m:"kept",    mh:"past tense",t:"irregular"},
+    {w:"leave", h:"to depart",           m:"left",    mh:"past tense",t:"irregular"},
+    {w:"lose",  h:"to misplace",         m:"lost",    mh:"past tense",t:"irregular"},
+    {w:"make",  h:"to create",           m:"made",    mh:"past tense",t:"irregular"},
+    {w:"meet",  h:"to encounter",        m:"met",     mh:"past tense",t:"irregular"},
+    {w:"pay",   h:"to give money",       m:"paid",    mh:"past tense",t:"irregular"},
+    {w:"say",   h:"to express words",    m:"said",    mh:"past tense",t:"irregular"},
+    {w:"sell",  h:"trade for money",     m:"sold",    mh:"past tense",t:"irregular"},
+    {w:"send",  h:"to dispatch",         m:"sent",    mh:"past tense",t:"irregular"},
+    {w:"sing",  h:"to make music",       m:"sang",    mh:"past tense",t:"irregular"},
+    {w:"sit",   h:"to be seated",        m:"sat",     mh:"past tense",t:"irregular"},
+    {w:"sleep", h:"rest at night",       m:"slept",   mh:"past tense",t:"irregular"},
+    {w:"stand", h:"to be upright",       m:"stood",   mh:"past tense",t:"irregular"},
+    {w:"swim",  h:"move in water",       m:"swam",    mh:"past tense",t:"irregular"},
+    {w:"teach", h:"to instruct",         m:"taught",  mh:"past tense",t:"irregular"},
+    {w:"tell",  h:"to inform",           m:"told",    mh:"past tense",t:"irregular"},
+    {w:"write", h:"put words on paper",  m:"wrote",   mh:"past tense",t:"irregular"},
+    {w:"begin", h:"to start",            m:"began",   mh:"past tense",t:"irregular"},
+    {w:"choose",h:"to select",           m:"chose",   mh:"past tense",t:"irregular"},
+    {w:"forget",h:"to not remember",     m:"forgot",  mh:"past tense",t:"irregular"},
+    {w:"hide",  h:"to conceal",          m:"hid",     mh:"past tense",t:"irregular"},
+    {w:"steal", h:"to take without asking",m:"stole", mh:"past tense",t:"irregular"},
+    {w:"throw", h:"to toss",             m:"threw",   mh:"past tense",t:"irregular"},
+    {w:"win",   h:"to be victorious",    m:"won",     mh:"past tense",t:"irregular"},
+    {w:"wear",  h:"to have on (clothes)",m:"wore",    mh:"past tense",t:"irregular"},
+    {w:"wake",  h:"to stop sleeping",    m:"woke",    mh:"past tense",t:"irregular"},
+    {w:"shake", h:"to move rapidly",     m:"shook",   mh:"past tense",t:"irregular"},
+    {w:"walk",  h:"move on foot",        m:"walked",  mh:"past tense",t:"regular"},
+    {w:"talk",  h:"have a conversation", m:"talked",  mh:"past tense",t:"regular"},
+    {w:"play",  h:"to have fun",         m:"played",  mh:"past tense",t:"regular"},
+    {w:"watch", h:"to observe",          m:"watched", mh:"past tense",t:"regular"},
+    {w:"cook",  h:"prepare food",        m:"cooked",  mh:"past tense",t:"regular"},
+    {w:"open",  h:"to unlock/reveal",    m:"opened",  mh:"past tense",t:"regular"},
+    {w:"close", h:"to shut",             m:"closed",  mh:"past tense",t:"regular"},
+    {w:"start", h:"to begin",            m:"started", mh:"past tense",t:"regular"},
+    {w:"finish",h:"to complete",         m:"finished",mh:"past tense",t:"regular"},
+    {w:"help",  h:"to assist",           m:"helped",  mh:"past tense",t:"regular"},
+    {w:"jump",  h:"to leap",             m:"jumped",  mh:"past tense",t:"regular"},
+    {w:"call",  h:"to phone or shout",   m:"called",  mh:"past tense",t:"regular"},
+    {w:"ask",   h:"to inquire",          m:"asked",   mh:"past tense",t:"regular"},
+    {w:"move",  h:"change position",     m:"moved",   mh:"past tense",t:"regular"},
+    {w:"stop",  h:"to cease",            m:"stopped", mh:"past tense",t:"regular"},
+    {w:"drop",  h:"to let fall",         m:"dropped", mh:"past tense",t:"regular"},
+    {w:"love",  h:"to feel affection",   m:"loved",   mh:"past tense",t:"regular"},
+    {w:"push",  h:"press forward",       m:"pushed",  mh:"past tense",t:"regular"},
+    {w:"pull",  h:"drag toward you",     m:"pulled",  mh:"past tense",t:"regular"},
+    {w:"clean", h:"to tidy up",          m:"cleaned", mh:"past tense",t:"regular"},
+    {w:"follow",h:"to go after",         m:"followed",mh:"past tense",t:"regular"},
+    {w:"visit", h:"to go see someone",   m:"visited", mh:"past tense",t:"regular"},
+    {w:"smile", h:"to show happiness",   m:"smiled",  mh:"past tense",t:"regular"},
+    {w:"listen",h:"to pay attention",    m:"listened",mh:"past tense",t:"regular"},
+    {w:"work",  h:"to do a job",         m:"worked",  mh:"past tense",t:"regular"},
+    {w:"laugh", h:"to express joy",      m:"laughed", mh:"past tense",t:"regular"},
+    {w:"dance", h:"to move to music",    m:"danced",  mh:"past tense",t:"regular"},
+    {w:"paint", h:"to apply color",      m:"painted", mh:"past tense",t:"regular"}
+  ]
+};
 
-let speechUnlocked = false;
+/* ════════════════════════════════════════════════
+   FIREBASE
+   ════════════════════════════════════════════════ */
+var db = null;
+(function() {
+  if (!FB_CONFIG_READY) {
+    db = null;
+    return;
+  }
+  try {
+    if (!window._fbErr && typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+      db = firebase.database();
+    }
+  } catch(e) { db = null; }
+})();
 
-// iOS Safari requires speechSynthesis to be triggered inside a user-gesture event.
-// We unlock it on the first tap anywhere on the page.
-function unlockSpeech() {
-  if (speechUnlocked || !window.speechSynthesis) return;
-  const utt = new SpeechSynthesisUtterance('');
-  utt.volume = 0;
-  window.speechSynthesis.speak(utt);
-  speechUnlocked = true;
+/* ════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════ */
+var myName    = '';
+var myRole    = '';
+var roomCode  = '';
+var inRoom    = false;
+var onlineMode= false;
+var pairCount = 8;
+var selCats   = {nouns:true,adjectives:true,verbs:true};
+
+var cards     = [];
+var flipped   = [];
+var matched   = {};
+var scores    = {};
+var turnOrder = [];
+var turnIdx   = 0;
+var canFlip   = false;
+
+/* scoring */
+var gameStartTime = 0;
+var moveCount     = 0;
+
+/* ════════════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════════════ */
+function show(id) {
+  var all = document.querySelectorAll('.screen');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
+  document.getElementById(id).classList.add('on');
 }
-document.addEventListener('touchstart', unlockSpeech, { once: true });
-document.addEventListener('click', unlockSpeech, { once: true });
 
-function speakText(text, rate, pitch) {
-  rate = rate || 0.88; pitch = pitch || 1.0;
-  if (!speechEnabled) return;
-  if (!window.speechSynthesis) return;
-  // iOS Chrome/Safari: cancel then small delay before speaking to avoid cut-off
-  window.speechSynthesis.cancel();
-  const doSpeak = function() {
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'en-US';
-    utt.rate = rate;
-    utt.pitch = pitch;
-    const voices = window.speechSynthesis.getVoices();
-    const enVoice = voices.find(function(v){ return v.lang.startsWith('en') && v.localService; }) ||
-                    voices.find(function(v){ return v.lang.startsWith('en'); }) ||
-                    null;
-    if (enVoice) utt.voice = enVoice;
-    // Workaround: Chrome on Android sometimes pauses mid-utterance
-    utt.onstart = function() {
-      if (window._speechResumeTimer) clearInterval(window._speechResumeTimer);
-      window._speechResumeTimer = setInterval(function() {
-        if (!window.speechSynthesis.speaking) { clearInterval(window._speechResumeTimer); return; }
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      }, 5000);
-    };
-    utt.onend = function() { if (window._speechResumeTimer) clearInterval(window._speechResumeTimer); };
-    window.speechSynthesis.speak(utt);
-  };
-  setTimeout(doSpeak, 50);
+var toastT = null;
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'on ' + (type || 'inf');
+  clearTimeout(toastT);
+  toastT = setTimeout(function() { t.className = ''; }, 2500);
 }
 
-function speakCard(card) {
-  if (!card || card.type !== 'verb') return;
-  // Speak only the verb form — nothing else
-  const form = card.verb[card.vtype];
-  speakText(form, 0.82, 1.0);
-}
-
-// Load voices async (Chrome needs this)
-if (window.speechSynthesis) {
-  window.speechSynthesis.getVoices();
-  window.speechSynthesis.addEventListener('voiceschanged', function() {
-    window.speechSynthesis.getVoices();
-  });
-}
-
-// ═══════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════
-let myRole = null, myName = '', roomCode = '', myIdx = -1;
-let roomRef = null, gameRef = null;
-let localGame = null;  // full game snapshot
-let pendingWild = false; // waiting for color pick
-let pendingChallenge = false;
-let drawnThisTurn = false;
-
-// ═══════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════
-function genCode() {
-  const C = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length:5}, ()=>C[Math.floor(Math.random()*C.length)]).join('');
+function sanitize(s) { return s.replace(/[.#$\/\[\]]/g,'_'); }
+function randCode() {
+  var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r='';
+  for(var i=0;i<6;i++) r+=c[Math.floor(Math.random()*c.length)];
+  return r;
 }
 function shuffle(a) {
-  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
   return a;
 }
-function showEl(id){ document.getElementById(id).style.display='flex'; }
-function hideEl(id){ document.getElementById(id).style.display='none'; }
-function showScreen(id) {
-  ['room-screen','lobby-screen','game-screen'].forEach(function(s) {
-    var el = document.getElementById(s);
-    if (el) el.style.display = s===id ? 'flex' : 'none';
-  });
-  var target = document.getElementById(id);
-  if (target) target.style.flexDirection = 'column';
-}
-function wait(txt){ var o=document.getElementById('wait-overlay'); var t=document.getElementById('wait-txt'); if(o) o.classList.add('on'); if(t) t.textContent=txt||'Connecting...'; }
-function noWait(){ var o=document.getElementById('wait-overlay'); if(o) o.classList.remove('on'); }
-function notify(txt,ms){
-  ms = ms||2500;
-  var el=document.getElementById('notif');
-  if(!el) return;
-  el.textContent=txt; el.classList.add('show');
-  setTimeout(function(){ el.classList.remove('show'); },ms);
-}
+function catCls(c) { return c==='adjectives'?'adj':c==='nouns'?'noun':'verb'; }
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+function elapsed() { return Math.floor((Date.now() - gameStartTime) / 1000); }
 
-// ═══════════════════════════════════════
-// CARD BUILDER
-// ═══════════════════════════════════════
-function randCard() {
-  if (Math.random() < 0.15) {
-    // special card
-    const r = Math.random();
-    const color = COLORS[Math.floor(Math.random()*4)];
-    if (r < 0.3) return {type:'skip', color};
-    if (r < 0.6) return {type:'reverse', color};
-    if (r < 0.8) return {type:'draw2', color};
-    if (r < 0.9) return {type:'wild', color:'wild'};
-    return {type:'wild4', color:'wild'};
+/* ════════════════════════════════════════════════
+   TOGGLE CATEGORY
+   ════════════════════════════════════════════════ */
+function toggleCat(btn) {
+  var cat = btn.getAttribute('data-cat');
+  var cnt = 0;
+  var ks  = Object.keys(selCats);
+  for(var i=0;i<ks.length;i++) if(selCats[ks[i]]) cnt++;
+  if(btn.classList.contains('on')) {
+    if(cnt<=1){toast('Select at least one category','err');return;}
+    btn.classList.remove('on'); selCats[cat]=false;
+  } else {
+    btn.classList.add('on'); selCats[cat]=true;
   }
-  const verb = VERBS[Math.floor(Math.random()*VERBS.length)];
-  const vtype = TYPES[Math.floor(Math.random()*4)];
-  return {type:'verb', color: COLORS[Math.floor(Math.random()*4)], vtype, verb};
 }
 
-function buildDeck() {
-  let deck = [];
-  // ensure some specials
-  COLORS.forEach(c=>{
-    for(let i=0;i<2;i++){
-      deck.push({type:'skip',color:c});
-      deck.push({type:'reverse',color:c});
-      deck.push({type:'draw2',color:c});
-    }
-  });
-  for(let i=0;i<6;i++){ deck.push({type:'wild',color:'wild'}); deck.push({type:'wild4',color:'wild'}); }
-  // verb cards
-  COLORS.forEach(c=>{
-    TYPES.forEach(vt=>{
-      VERBS.forEach(v=>{
-        deck.push({type:'verb',color:c,vtype:vt,verb:v});
-      });
-    });
-  });
+/* ════════════════════════════════════════════════
+   BUILD DECK
+   ════════════════════════════════════════════════ */
+function buildDeck(cats, count) {
+  var pool=[];
+  for(var k=0;k<cats.length;k++){
+    var list=WORDS[cats[k]]||[];
+    for(var j=0;j<list.length;j++) pool.push({word:list[j].w,hint:list[j].h,match:list[j].m,mhint:list[j].mh,type:list[j].t,cat:cats[k]});
+  }
+  shuffle(pool);
+  var pairs=pool.slice(0,count);
+  var deck=[];
+  for(var i=0;i<pairs.length;i++){
+    var p=pairs[i];
+    deck.push({word:p.word, hint:p.hint,  cat:p.cat, pid:i, side:'A', wt:p.type});
+    deck.push({word:p.match,hint:p.mhint, cat:p.cat, pid:i, side:'B', wt:p.type});
+  }
   return shuffle(deck);
 }
 
-function cardHtml(card, size) {
-  // size: 'table' (80x115) or 'hand' (72x104)
-  const w = size==='hand' ? 72 : 80;
-  const h = size==='hand' ? 104 : 115;
-  const cc = 'c-'+(card.activeColor||card.color);
-  const sym = (c)=>{
-    if(c==='red') return '🔴';
-    if(c==='blue') return '🔵';
-    if(c==='green') return '🟢';
-    return '🟡';
-  };
-  const ac = card.activeColor||card.color;
-  if(card.type==='verb'){
-    const form = card.verb[card.vtype];
-    const emoji = VERB_EMOJI[card.verb.b] || '📝';
-    return `<div class="card ${cc}" style="width:${w}px;height:${h}px;justify-content:center;">
-      <div class="card-sym-sm">${ac!=='wild'?sym(ac):''}</div>
-      <div class="card-verb">${form}</div>
-      <div class="card-emoji">${emoji}</div>
-      <div class="card-type">${TYPE_LABELS[card.vtype]}</div>
-      <div class="card-sym-sm2">${ac!=='wild'?sym(ac):''}</div>
-    </div>`;
-  }
-  if(card.type==='skip') return `<div class="card ${cc}" style="width:${w}px;height:${h}px"><div class="card-sym-sm">🚫</div><div class="card-sym">🚫</div><div class="card-type">Skip</div><div class="card-sym-sm2">🚫</div></div>`;
-  if(card.type==='reverse') return `<div class="card ${cc}" style="width:${w}px;height:${h}px"><div class="card-sym-sm">↩</div><div class="card-sym">↩</div><div class="card-type">Reverse</div><div class="card-sym-sm2">↩</div></div>`;
-  if(card.type==='draw2') return `<div class="card ${cc}" style="width:${w}px;height:${h}px"><div class="card-sym-sm">+2</div><div class="card-sym" style="font-size:22px">+2</div><div class="card-type">Draw 2</div><div class="card-sym-sm2">+2</div></div>`;
-  if(card.type==='wild') return `<div class="card c-wild" style="width:${w}px;height:${h}px"><div class="card-sym">★</div><div class="card-type">Wild</div></div>`;
-  if(card.type==='wild4') return `<div class="card c-wild" style="width:${w}px;height:${h}px"><div class="card-sym">+4</div><div class="card-type">Wild +4</div></div>`;
-  return '';
+/* ════════════════════════════════════════════════
+   SOLO GAME
+   ════════════════════════════════════════════════ */
+function startSolo() {
+  myName = document.getElementById('solo-name').value.trim();
+  if(!myName){toast('Enter your name first','err');return;}
+  pairCount = Math.max(4,Math.min(30,parseInt(document.getElementById('pair-count').value)||8));
+
+  var cats = Object.keys(selCats).filter(function(k){return selCats[k];});
+  cards   = buildDeck(cats, pairCount);
+  flipped = []; matched = {}; moveCount = 0;
+  scores  = {}; scores[sanitize(myName)] = 0;
+  turnOrder = [sanitize(myName)]; turnIdx = 0;
+  canFlip = true; onlineMode = false;
+  gameStartTime = Date.now();
+
+  show('game');
+  renderBoard();
+  renderScores();
+  renderTurn();
+  document.getElementById('btn-skip').disabled = false;
 }
 
-// ═══════════════════════════════════════
-// CAN PLAY
-// ═══════════════════════════════════════
-function canPlay(card, topCard) {
-  if(card.type==='wild'||card.type==='wild4') return true;
-  const tc = topCard.activeColor||topCard.color;
-  const cc = card.activeColor||card.color;
-  if(cc===tc) return true;
-  if(card.type==='verb'&&topCard.type==='verb'&&card.vtype===topCard.vtype) return true;
-  if(card.type!=='verb'&&topCard.type!=='verb'&&card.type===topCard.type) return true;
-  return false;
-}
-
-// ═══════════════════════════════════════
-// CREATE ROOM
-// ═══════════════════════════════════════
-async function createRoom() {
-  const name = document.getElementById('host-name').value.trim();
-  if(!name){ document.getElementById('host-err').textContent='Please enter your name.'; return; }
-  wait('Creating room...');
-  const code = genCode();
-  const ref = db.ref('uno_rooms/'+code);
-  try {
-    await ref.set({
-      code, status:'waiting', hostName:name,
-      players:{}, game:null, createdAt:Date.now()
-    });
-    myRole='host'; myName=name; roomCode=code; roomRef=ref; myIdx=0;
-    await ref.child('players/0').set({name, idx:0, cardCount:0, online:true});
-    noWait();
-    showScreen('lobby-screen');
-    document.getElementById('lobby-title').textContent='Room created — share the code!';
-    document.getElementById('lobby-code-area').style.display='block';
-    document.getElementById('lobby-code-badge').textContent=code;
-    document.getElementById('btn-start').style.display='block';
-    document.getElementById('tb-code').textContent='🔑 '+code;
-    listenLobby();
-  } catch(e) {
-    noWait(); document.getElementById('host-err').textContent='Error: '+e.message;
-  }
-}
-
-// ═══════════════════════════════════════
-// JOIN ROOM
-// ═══════════════════════════════════════
-async function joinRoom() {
-  const name = document.getElementById('join-name').value.trim();
-  const code = document.getElementById('join-code').value.trim().toUpperCase();
-  if(!name){ document.getElementById('join-err').textContent='Please enter your name.'; return; }
-  if(code.length<4){ document.getElementById('join-err').textContent='Please enter the room code.'; return; }
-  wait('Looking for room...');
-  const ref = db.ref('uno_rooms/'+code);
-  try {
-    const snap = await ref.once('value');
-    if(!snap.exists()){ noWait(); document.getElementById('join-err').textContent='Room not found.'; return; }
-    const data = snap.val();
-    if(data.status==='playing'){ noWait(); document.getElementById('join-err').textContent='The game has already started.'; return; }
-    // get next idx
-    const players = data.players||{};
-    const idx = Object.keys(players).length;
-    if(idx>=15){ noWait(); document.getElementById('join-err').textContent='Room is full (max 15 players).'; return; }
-    myRole='player'; myName=name; roomCode=code; roomRef=ref; myIdx=idx;
-    await ref.child('players/'+idx).set({name, idx, cardCount:0, online:true});
-    noWait();
-    showScreen('lobby-screen');
-    document.getElementById('lobby-title').textContent='Joined the room';
-    document.getElementById('lobby-code-area').style.display='none';
-    document.getElementById('btn-start').style.display='none';
-    document.getElementById('tb-code').textContent='🔑 '+code;
-    listenLobby();
-  } catch(e) {
-    noWait(); document.getElementById('join-err').textContent='Error: '+e.message;
-  }
-}
-
-// ═══════════════════════════════════════
-// LOBBY LISTENERS
-// ═══════════════════════════════════════
-function listenLobby() {
-  roomRef.on('value', snap => {
-    if(!snap.exists()) return;
-    const data = snap.val();
-    // render players
-    const players = Object.values(data.players||{}).sort((a,b)=>a.idx-b.idx);
-    document.getElementById('lobby-players').innerHTML = players.map(p=>
-      `<div class="player-chip ${p.idx===0?'host':''}">${p.idx===0?'🎙 ':'🎮 '}${p.name}</div>`
-    ).join('');
-    document.getElementById('lobby-status').textContent = players.length===1
-      ? 'Waiting for players... (minimum 2)'
-      : `${players.length} players connected. ${myRole==='host'?'Start whenever you are ready!':'Waiting for the host...'}`;
-    if(myRole==='host') document.getElementById('btn-start').disabled = players.length<2;
-    // game started?
-    if(data.status==='playing' && data.game) {
-      enterGame(data.game, Object.values(data.players||{}).sort((a,b)=>a.idx-b.idx));
-    }
-  });
-}
-
-// ═══════════════════════════════════════
-// HOST START GAME — defined once below (see INIT section)
-// ═══════════════════════════════════════
-var hostStartGame;  // declared here, defined fully in INIT
-
-// ═══════════════════════════════════════
-// ENTER GAME (called when game snapshot arrives)
-// ═══════════════════════════════════════
-let inGame = false;
-function enterGame(game, players) {
-  if(!inGame) {
-    inGame = true;
-    showScreen('game-screen');
-    listenGame();
-  }
-}
-
-function listenGame() {
-  roomRef.child('game').on('value', snap => {
-    if(!snap.exists()) return;
-    localGame = snap.val();
-    if(localGame.status==='won') { showWin(localGame.winner); return; }
-    renderGame();
-  });
-}
-
-// ═══════════════════════════════════════
-// RENDER GAME
-// ═══════════════════════════════════════
-function renderGame() {
-  var g = localGame;
-  if(!g) return;
-  var players = getPlayers();
-  var myHand = (g.hands||{})[myIdx] || [];
-  var top = g.discard[g.discard.length-1];
-  var isMyTurn = g.current === myIdx;
-  // If a Firebase update arrived while quiz was open and it's no longer our turn, close quiz
-  if (!isMyTurn) document.getElementById('quiz-overlay').classList.remove('on');
-
-  // topbar
-  document.getElementById('tb-code').textContent = '🔑 '+roomCode;
-  document.getElementById('tb-turn').textContent = isMyTurn ? '⭐ Your turn' : `Turn: ${players[g.current]?.name||'?'}`;
-
-  // players strip
-  document.getElementById('players-strip').innerHTML = players.map((p,i)=>`
-    <div class="p-tag ${i===g.current?'active':''} ${i===myIdx?'me':''}">
-      <div class="p-tag-name">${p.name}${i===myIdx?' (me)':''}</div>
-      <div class="p-tag-count">${(g.hands?.[i]||[]).length} cards</div>
-      ${(g.hands?.[i]||[]).length===1?'<div class="p-tag-uno">UNO!</div>':''}
-    </div>
-  `).join('');
-
-  // discard — render only, no auto-speech (speech happens in quiz)
-  document.getElementById('discard-top').innerHTML = cardHtml(top,'table');
-  document.getElementById('deck-count').textContent = (g.deck||[]).length+' 🂠';
-
-  // message
-  const mb = document.getElementById('msg-bar');
-  mb.textContent = g.message||'';
-  mb.className = 'msg-bar'+(g.pendingChallenge&&isMyTurn?' warn':g.status==='won'?' success':'');
-
-  // hand
-  document.getElementById('hand-title').textContent = `Your hand (${myHand.length} cards)${isMyTurn?' — Your turn ⭐':''}`;
-  const hc = document.getElementById('hand-cards');
-  if(g.pendingWild && isMyTurn) {
-    hc.innerHTML='<p style="color:var(--text2);font-size:13px;align-self:center">Choose a color first ↑</p>';
-    document.getElementById('color-overlay').classList.add('on');
-  } else if(g.pendingChallenge && isMyTurn) {
-    hc.innerHTML='';
-    document.getElementById('challenge-overlay').classList.add('on');
-    document.getElementById('challenge-txt').textContent=`${players[g.lastWildPlayer]?.name||'?'} played a Wild +4 on you. Do you want to challenge them? If they had another playable card, they draw 4. If not: you draw 6.`;
-  } else {
-    document.getElementById('color-overlay').classList.remove('on');
-    document.getElementById('challenge-overlay').classList.remove('on');
-    hc.innerHTML = '';
-    myHand.forEach(function(card, idx) {
-      var playable = isMyTurn && canPlay(card, top);
-      var div = document.createElement('div');
-      div.className = 'hcard ' + (playable ? 'playable' : 'unplayable');
-      div.title = cardTooltip(card);
-      div.innerHTML = cardHtml(card, 'hand');
-      if (playable) {
-        div.setAttribute('data-idx', idx);
-        div.addEventListener('click', function() { onPlayCard(parseInt(this.getAttribute('data-idx'), 10)); });
-      }
-      hc.appendChild(div);
-    });
-  }
-
-  // pass button
-  document.getElementById('btn-pass').disabled = !isMyTurn;
-
-  // host skip button — visible to host only, disabled when it IS the host's own turn
-  var skipBtn = document.getElementById('btn-host-skip');
-  if (skipBtn) {
-    if (myRole === 'host') {
-      skipBtn.style.display = 'inline-block';
-      skipBtn.disabled = isMyTurn; // host skips others, not themselves
-    } else {
-      skipBtn.style.display = 'none';
-    }
-  }
-}
-
-function getPlayers() {
-  const snap = localGame;
-  if(!snap) return [];
-  // Try from roomRef cache — use hands keys as count
-  const hands = snap.hands||{};
-  const n = Object.keys(hands).length;
-  // We store names separately; rebuild from lobbyPlayers if available
-  return Array.from({length:n},(_,i)=>({name:snap.playerNames?.[i]||('Jugador '+(i+1)), idx:i}));
-}
-
-function cardTooltip(card) {
-  if(card.type==='verb') return `${card.verb.b} → ${card.verb.p} → ${card.verb.pp} (${card.verb.g})`;
-  return card.type.toUpperCase();
-}
-
-// ═══════════════════════════════════════
-// QUIZ SYSTEM
-// ═══════════════════════════════════════
-let pendingQuizCardIdx = -1;
-
-const TENSE_KEYS   = ['b','p','pp','g'];
-const TENSE_NAMES  = {b:'Base form', p:'Simple Past', pp:'Past Participle', g:'Gerund'};
-const TENSE_Q      = {b:'Base form', p:'Simple Past', pp:'Past Participle', g:'Gerund'};
-
-// Color config matching UNO palette
-const COLOR_CFG = {
-  red:    { bg:'#FDECEB', border:'#E74C3C', text:'#C0392B', dot:'🔴' },
-  blue:   { bg:'#EAF4FB', border:'#2980B9', text:'#1A5276', dot:'🔵' },
-  green:  { bg:'#EAFAF1', border:'#27AE60', text:'#1E8449', dot:'🟢' },
-  yellow: { bg:'#FEF9E7', border:'#F39C12', text:'#9A6B00', dot:'🟡' },
-  wild:   { bg:'#F4F6F9', border:'#BDC3C7', text:'#2C3E50', dot:'🌈' }
-};
-
-function buildQuiz(card) {
-  // Ask about a tense DIFFERENT from the card's current tense
-  var otherTenses = TENSE_KEYS.filter(function(t){ return t !== card.vtype; });
-  var askTense = otherTenses[Math.floor(Math.random() * otherTenses.length)];
-  var correct = card.verb[askTense];
-
-  // Wrong options = the OTHER tense forms of the SAME verb (not other verbs)
-  var wrongTenses = TENSE_KEYS.filter(function(t){ return t !== card.vtype && t !== askTense; });
-  // Shuffle wrong tenses so order varies
-  wrongTenses.sort(function(){ return Math.random() - 0.5; });
-  var wrongs = [];
-  for (var i = 0; i < wrongTenses.length; i++) {
-    var w = card.verb[wrongTenses[i]];
-    // Only add if distinct from correct (some verbs share forms e.g. cut/cut/cut)
-    if (w !== correct && wrongs.indexOf(w) === -1) wrongs.push(w);
-  }
-  // If the verb has duplicate forms (e.g. "cut"), pull one distractor from another verb
-  if (wrongs.length < 2) {
-    var pool = VERBS.filter(function(v){ return v.b !== card.verb.b; });
-    pool.sort(function(){ return Math.random() - 0.5; });
-    for (var j = 0; j < pool.length && wrongs.length < 2; j++) {
-      var extra = pool[j][askTense];
-      if (extra !== correct && wrongs.indexOf(extra) === -1) wrongs.push(extra);
-    }
-  }
-  var options = [correct, wrongs[0], wrongs[1]].sort(function(){ return Math.random() - 0.5; });
-  return { askTense: askTense, correct: correct, options: options };
-}
-
-function showQuiz(cardIdx) {
-  const g = localGame;
-  const card = (g.hands[myIdx]||[])[cardIdx];
-  if (!card || card.type !== 'verb') {
-    // Non-verb card: play directly without quiz
-    executePlay(cardIdx);
+/* ════════════════════════════════════════════════
+   ONLINE — CREATE ROOM
+   ════════════════════════════════════════════════ */
+function createRoom() {
+  if(!db){
+    var banner = document.getElementById('fb-banner');
+    banner.style.display = 'block';
+    banner.style.outline = '3px solid var(--red)';
+    setTimeout(function(){ banner.style.outline = ''; }, 1500);
     return;
   }
-  pendingQuizCardIdx = cardIdx;
-  const quiz = buildQuiz(card);
-
-  // Card preview with correct UNO color
-  const cc = COLOR_CFG[card.activeColor || card.color] || COLOR_CFG.red;
-  const emoji = VERB_EMOJI[card.verb.b] || '📝';
-  document.getElementById('qcp').style.cssText =
-    'background:' + cc.bg + ';border-color:' + cc.border + ';color:' + cc.text;
-  document.getElementById('qcp').innerHTML =
-    '<div class="qcp-dot">' + cc.dot + '</div>' +
-    '<div class="qcp-emoji">' + emoji + '</div>' +
-    '<div class="qcp-verb">' + card.verb[card.vtype] + '</div>' +
-    '<div class="qcp-tense">' + TENSE_Q[card.vtype] + '</div>';
-
-  // Question
-  document.getElementById('quiz-q').textContent =
-    'What is the ' + TENSE_NAMES[quiz.askTense] + ' of...';
-  document.getElementById('quiz-verb-big').textContent =
-    card.verb.b + '  ' + (VERB_EMOJI[card.verb.b] || '');
-
-  // Options — use data-attributes to avoid quote-escaping bugs in all browsers
-  var optsDiv = document.getElementById('quiz-opts');
-  optsDiv.innerHTML = '';
-  quiz.options.forEach(function(opt) {
-    var btn = document.createElement('button');
-    btn.className = 'quiz-opt';
-    btn.textContent = opt;
-    btn.setAttribute('data-opt', opt);
-    btn.setAttribute('data-correct', quiz.correct);
-    btn.setAttribute('data-cardidx', String(cardIdx));
-    btn.addEventListener('click', function() {
-      answerQuiz(
-        btn.getAttribute('data-opt'),
-        btn.getAttribute('data-correct'),
-        parseInt(btn.getAttribute('data-cardidx'), 10)
-      );
-    });
-    optsDiv.appendChild(btn);
-  });
-  var fb = document.getElementById('quiz-feedback');
-  fb.style.display = 'none';
-  fb.textContent = '';
-
-  // Pronounce only once when quiz opens
-  speakCard(card);
-
-  document.getElementById('quiz-overlay').classList.add('on');
+  myName = document.getElementById('mp-name').value.trim();
+  if(!myName){toast('Enter your name','err');return;}
+  pairCount = Math.max(4,Math.min(30,parseInt(document.getElementById('pair-count').value)||8));
+  myRole='host'; roomCode=randCode();
+  var cats = Object.keys(selCats).filter(function(k){return selCats[k];});
+  var data = {host:sanitize(myName),status:'waiting',categories:cats,pairCount:pairCount,players:{}};
+  data.players[sanitize(myName)] = {name:myName,score:0,role:'host'};
+  db.ref('rooms/'+roomCode).set(data).then(function(){
+    enterWaiting();
+  }).catch(function(e){toast('Error: '+e.message,'err');});
 }
 
-function answerQuiz(chosen, correct, cardIdx) {
-  const fb = document.getElementById('quiz-feedback');
-  // Highlight options
-  var opts = document.querySelectorAll('.quiz-opt');
-  opts.forEach(function(btn) {
-    var txt = btn.textContent.trim();
-    if (txt === correct) {
-      btn.classList.add('correct');
-    } else if (txt === chosen && chosen !== correct) {
-      btn.classList.add('wrong');
-    } else {
-      btn.classList.add('dimmed');
+/* ════════════════════════════════════════════════
+   ONLINE — JOIN ROOM
+   ════════════════════════════════════════════════ */
+function joinRoom() {
+  if(!db){toast('Firebase not configured','err');return;}
+  myName = document.getElementById('mp-name').value.trim();
+  var code = document.getElementById('room-code-input').value.trim().toUpperCase();
+  if(!myName){toast('Enter your name','err');return;}
+  if(code.length<4){toast('Enter a room code','err');return;}
+  myRole='player'; roomCode=code;
+  db.ref('rooms/'+code).once('value').then(function(snap){
+    if(!snap.exists()){toast('Room not found','err');return;}
+    var r=snap.val();
+    if(r.status!=='waiting'){toast('Game already started','err');return;}
+    db.ref('rooms/'+code+'/players/'+sanitize(myName)).set({name:myName,score:0,role:'player'});
+    enterWaiting();
+  }).catch(function(e){toast('Error: '+e.message,'err');});
+}
+
+/* ════════════════════════════════════════════════
+   WAITING ROOM
+   ════════════════════════════════════════════════ */
+function enterWaiting() {
+  inRoom=true; show('waiting');
+  document.getElementById('code-display').textContent = roomCode;
+  document.getElementById('hbtns').style.display = myRole==='host'?'flex':'none';
+  document.getElementById('gbtns').style.display = myRole!=='host'?'block':'none';
+  db.ref('rooms/'+roomCode).on('value',function(snap){
+    if(!snap.exists()){leaveRoom();return;}
+    var r=snap.val();
+    var players=r.players||{};
+    var pkeys=Object.keys(players);
+    var list=document.getElementById('plist');
+    list.innerHTML='';
+    for(var i=0;i<pkeys.length;i++){
+      var p=players[pkeys[i]];
+      var chip=document.createElement('div');
+      chip.className='pchip'+(p.name===myName?' me':'');
+      chip.innerHTML='<div class="av">'+p.name[0].toUpperCase()+'</div><span>'+p.name+(p.role==='host'?' 👑':'')+'</span>';
+      list.appendChild(chip);
     }
-  });
-
-  if (chosen === correct) {
-    fb.textContent = '🎉 Correct! Playing your card...';
-    fb.className = 'quiz-feedback ok';
-    fb.style.display = 'block';
-    setTimeout(function() {
-      document.getElementById('quiz-overlay').classList.remove('on');
-      executePlay(cardIdx);
-    }, 900);
-  } else {
-    fb.textContent = '❌ Wrong! The answer is "' + correct + '". Drawing +1 card...';
-    fb.className = 'quiz-feedback fail';
-    fb.style.display = 'block';
-    setTimeout(function() {
-      document.getElementById('quiz-overlay').classList.remove('on');
-      penalizeWrongAnswer();
-    }, 1800);
-  }
-}
-
-function penalizeWrongAnswer() {
-  // Card stays in hand; player draws +1
-  const g = localGame;
-  if (!g) return;
-  var newHands = JSON.parse(JSON.stringify(g.hands));
-  var newDeck  = (g.deck || []).slice();
-  var newDiscard = g.discard.slice();
-  if (newDeck.length === 0) {
-    var td = newDiscard.pop();
-    newDeck = shuffle(newDiscard);
-    newDiscard = [td];
-  }
-  var drawn = newDeck.shift();
-  if (drawn) newHands[myIdx].push(drawn);
-  roomRef.child('game').update({
-    hands: newHands, deck: newDeck, discard: newDiscard,
-    message: myName + ' answered wrong and draws 1 card.',
-    lastAction: Date.now()
+    document.getElementById('wmsg').textContent = pkeys.length<2?'Waiting for more players…':pkeys.length+' players ready! ✅';
+    if(r.status==='playing') launchOnlineGame(r);
+    if(r.status==='ended')   showResults(r.scores,r.winner,r.moveCount,r.duration);
   });
 }
 
-// ═══════════════════════════════════════
-// PLAY A CARD
-// ═══════════════════════════════════════
-function onPlayCard(idx) {
-  const g = localGame;
-  if(!g || g.current!==myIdx) return;
-  if(g.pendingWild||g.pendingChallenge) return;
-  const myHand = [...(g.hands[myIdx]||[])];
-  const card = myHand[idx];
-  const top = g.discard[g.discard.length-1];
-  if(!canPlay(card, top)) return;
-  // Verb cards go through quiz; special cards play directly
-  if (card.type === 'verb') {
-    showQuiz(idx);
-  } else {
-    executePlay(idx);
-  }
-}
-
-function executePlay(idx) {
-  const g = localGame;
-  if(!g || g.current!==myIdx) return;
-  var myHand = (g.hands[myIdx]||[]).slice();
-  var card = myHand[idx];
-  if (!card) return;
-  var top = g.discard[g.discard.length-1];
-  if(!canPlay(card, top)) return;
-
-  myHand.splice(idx, 1);
-
-  if(myHand.length===0) {
-    commitWin(card, myHand, g);
-    return;
-  }
-
-  if(card.type==='wild'||card.type==='wild4') {
-    var newDiscard = g.discard.concat([card]);
-    var updates = {};
-    updates['hands/' + myIdx] = myHand;
-    updates.discard = newDiscard;
-    updates.pendingWild = true;
-    updates.lastWildPlayer = myIdx;
-    updates.message = myName + ' played ' + (card.type==='wild4'?'Wild +4':'Wild Card') + '. Choose a color.';
-    roomRef.child('game').update(updates);
-    return;
-  }
-
-  applyCard(card, myHand, g);
-}
-
-function applyCard(card, myHand, g) {
-  const players = getPlayers();
-  const n = players.length;
-  const nextIdx = (g.current + g.direction + n) % n;
-  let updates = {};
-  let newHands = JSON.parse(JSON.stringify(g.hands));
-  newHands[myIdx] = myHand;
-  let newDiscard = [...g.discard, card];
-  let newDeck = [...(g.deck||[])];
-  let newDirection = g.direction;
-  let newCurrent = g.current;
-  let msg = '';
-
-  function drawN(playerIdx, n) {
-    for(let i=0;i<n;i++){
-      if(newDeck.length===0){ const td=newDiscard.pop(); newDeck=shuffle(newDiscard); newDiscard=[td]; }
-      if(newDeck.length>0) newHands[playerIdx].push(newDeck.shift());
-    }
-  }
-
-  if(card.type==='skip'){
-    msg = `${myName} played Skip. ${players[nextIdx]?.name||'?'} loses their turn.`;
-    newCurrent = (g.current + g.direction*2 + n*2) % n;
-  } else if(card.type==='reverse'){
-    newDirection = g.direction * -1;
-    msg = `${myName} played Reverse. Direction changed!`;
-    newCurrent = n===2 ? (g.current + newDirection*2 + n*2)%n : (g.current + newDirection + n)%n;
-  } else if(card.type==='draw2'){
-    drawN(nextIdx, 2);
-    msg = `${myName} played +2. ${players[nextIdx]?.name||'?'} draws 2 cards.`;
-    newCurrent = (g.current + g.direction*2 + n*2) % n;
-  } else {
-    msg = `${myName} played ${card.verb[card.vtype]} (${TYPE_LABELS[card.vtype]}).`;
-    newCurrent = nextIdx;
-  }
-
-  updates = {
-    hands: newHands,
-    discard: newDiscard,
-    deck: newDeck,
-    direction: newDirection,
-    current: newCurrent,
-    message: msg,
-    pendingWild: false,
-    pendingChallenge: false,
-    lastAction: Date.now()
-  };
-  roomRef.child('game').update(updates);
-}
-
-function commitWin(card, myHand, g) {
-  roomRef.child('game').update({
-    [`hands/${myIdx}`]: myHand,
-    discard: [...g.discard, card],
-    status: 'won',
-    winner: myName,
-    message: `${myName} wins!`
-  });
-}
-
-// ═══════════════════════════════════════
-// CHOOSE COLOR (wild)
-// ═══════════════════════════════════════
-function chooseColor(color) {
-  const g = localGame;
-  if(!g||!g.pendingWild) return;
-  document.getElementById('color-overlay').classList.remove('on');
-  const newDiscard = [...g.discard];
-  newDiscard[newDiscard.length-1] = {...newDiscard[newDiscard.length-1], activeColor: color};
-
-  const topCard = newDiscard[newDiscard.length-1];
-  const players = getPlayers();
-  const n = players.length;
-  const nextIdx = (g.current + g.direction + n) % n;
-
-  if(topCard.type==='wild4') {
-    roomRef.child('game').update({
-      discard: newDiscard,
-      pendingWild: false,
-      pendingChallenge: true,
-      current: nextIdx,
-      message: `${myName} chose ${COLOR_NAMES[color]}. ${players[nextIdx]?.name||'?'}: challenge?`
-    });
-  } else {
-    const nextPlayer = players[nextIdx];
-    roomRef.child('game').update({
-      discard: newDiscard,
-      pendingWild: false,
-      pendingChallenge: false,
-      current: nextIdx,
-      message: `${myName} chose ${COLOR_NAMES[color]}. ${nextPlayer?.name||'?'}'s turn.`
-    });
-  }
-}
-
-// ═══════════════════════════════════════
-// CHALLENGE
-// ═══════════════════════════════════════
-function resolveChallenge(doChallenge) {
-  const g = localGame;
-  if(!g||!g.pendingChallenge) return;
-  document.getElementById('challenge-overlay').classList.remove('on');
-
-  const players = getPlayers();
-  const n = players.length;
-  let newHands = JSON.parse(JSON.stringify(g.hands));
-  let newDeck = [...(g.deck||[])];
-  let newDiscard = [...g.discard];
-  let msg = '';
-
-  function drawN(playerIdx, cnt) {
-    for(let i=0;i<cnt;i++){
-      if(newDeck.length===0){ const td=newDiscard.pop(); newDeck=shuffle(newDiscard); newDiscard=[td]; }
-      if(newDeck.length>0) newHands[playerIdx].push(newDeck.shift());
-    }
-  }
-
-  if(doChallenge) {
-    // Check if challenged player (lastWildPlayer) had a playable card before the wild4
-    const prevTop = g.discard.length>=2 ? g.discard[g.discard.length-2] : null;
-    const challengedHand = newHands[g.lastWildPlayer]||[];
-    const hadPlayable = prevTop && challengedHand.some(c=>canPlay(c,prevTop));
-    if(hadPlayable) {
-      drawN(g.lastWildPlayer, 4);
-      msg = `Challenge successful! ${players[g.lastWildPlayer]?.name||'?'} draws 4 cards.`;
-    } else {
-      drawN(myIdx, 6);
-      msg = `Challenge failed. ${myName} draws 6 cards.`;
-    }
-  } else {
-    drawN(myIdx, 4);
-    msg = `${myName} accepts the +4 and draws 4 cards.`;
-  }
-
-  const nextIdx = (g.current + g.direction + n) % n;
-  roomRef.child('game').update({
-    hands: newHands, deck: newDeck, discard: newDiscard,
-    pendingChallenge: false,
-    current: nextIdx,
-    message: msg,
-    lastAction: Date.now()
-  });
-}
-
-// ═══════════════════════════════════════
-// DRAW CARD
-// ═══════════════════════════════════════
-function onDrawCard() {
-  const g = localGame;
-  if(!g||g.current!==myIdx||g.pendingWild||g.pendingChallenge) return;
-  let newHands = JSON.parse(JSON.stringify(g.hands));
-  let newDeck = [...(g.deck||[])];
-  let newDiscard = [...g.discard];
-  if(newDeck.length===0){const td=newDiscard.pop();newDeck=shuffle(newDiscard);newDiscard=[td];}
-  const drawn = newDeck.shift();
-  if(!drawn) return;
-  newHands[myIdx].push(drawn);
-  roomRef.child('game').update({
-    hands: newHands, deck: newDeck, discard: newDiscard,
-    message: `${myName} drew a card.`
-  });
-  notify('You drew a card. Play it or pass your turn.');
-}
-
-// ═══════════════════════════════════════
-// PASS TURN
-// ═══════════════════════════════════════
-function passTurn() {
-  const g = localGame;
-  if(!g||g.current!==myIdx||g.pendingWild||g.pendingChallenge) return;
-  const players = getPlayers();
-  const n = players.length;
-  const nextIdx = (g.current + g.direction + n) % n;
-  roomRef.child('game').update({
-    current: nextIdx,
-    message: `${myName} passed. ${players[nextIdx]?.name||'?'}'s turn.`,
-    lastAction: Date.now()
-  });
-}
-
-// ═══════════════════════════════════════
-// HOST SKIP PLAYER
-// ═══════════════════════════════════════
-function hostSkipPlayer() {
-  if (myRole !== 'host') return;
-  var g = localGame;
-  if (!g || g.status !== 'playing') return;
-  var players = getPlayers();
-  var n = players.length;
-  var skippedName = players[g.current] ? players[g.current].name : 'Player';
-  var nextIdx = (g.current + g.direction + n) % n;
-  document.getElementById('quiz-overlay').classList.remove('on');
-  roomRef.child('game').update({
-    current: nextIdx,
-    message: 'Host skipped ' + skippedName + '. ' + (players[nextIdx] ? players[nextIdx].name : '') + "'s turn.",
-    lastAction: Date.now()
-  });
-  notify('Skipped ' + skippedName);
-}
-
-// ═══════════════════════════════════════
-// SOUND TOGGLE
-// ═══════════════════════════════════════
-function toggleSound() {
-  speechEnabled = !speechEnabled;
-  const btn = document.getElementById('btn-sound');
-  if (speechEnabled) {
-    btn.textContent = '🔊 Sound';
-    btn.style.background = 'var(--green-light)';
-    btn.style.color = 'var(--green)';
-    btn.style.borderColor = 'var(--green-mid)';
-    notify('🔊 Pronunciation ON');
-  } else {
-    window.speechSynthesis && window.speechSynthesis.cancel();
-    btn.textContent = '🔇 Muted';
-    btn.style.background = 'var(--bg)';
-    btn.style.color = 'var(--text2)';
-    btn.style.borderColor = 'var(--border)';
-    notify('🔇 Pronunciation OFF');
-  }
-}
-
-// ═══════════════════════════════════════
-// UNO
-// ═══════════════════════════════════════
-function callUno() {
-  const g = localGame;
-  if(!g) return;
-  const myHand = g.hands?.[myIdx]||[];
-  if(myHand.length===1) {
-    notify('🔔 UNO! You said it in time.');
-    roomRef.child('game').update({ message: `🔔 ${myName} said UNO!` });
-  } else {
-    // Check if someone else has 1 card and didn't say UNO (honor system)
-    notify('Only say UNO! when you have 1 card left.');
-  }
-}
-
-// ═══════════════════════════════════════
-// WIN
-// ═══════════════════════════════════════
-function showWin(winner) {
-  document.getElementById('win-name').textContent = `${winner} wins!`;
-  document.getElementById('win-overlay').classList.add('on');
-}
-
-// ═══════════════════════════════════════
-// RESTART
-// ═══════════════════════════════════════
-async function restartGame() {
-  document.getElementById('win-overlay').classList.remove('on');
-  if(myRole==='host') {
-    const snap = await roomRef.once('value');
-    const data = snap.val();
-    const players = Object.values(data.players||{}).sort((a,b)=>a.idx-b.idx);
-    await roomRef.update({ status:'waiting', game:null });
-    inGame = false;
-    showScreen('lobby-screen');
-    document.getElementById('lobby-title').textContent='Room — new game!';
-    document.getElementById('lobby-code-area').style.display='block';
-    document.getElementById('btn-start').style.display='block';
-    document.getElementById('btn-start').disabled=false;
-  } else {
-    inGame = false;
-    showScreen('lobby-screen');
-  }
-}
-
-// ═══════════════════════════════════════
-// LEAVE
-// ═══════════════════════════════════════
-function leaveRoom() {
-  if(roomRef) roomRef.child('players/'+myIdx+'/online').set(false);
-  if(roomRef) roomRef.off();
-  inGame=false; localGame=null; myRole=null; myIdx=-1; roomRef=null; roomCode='';
-  document.getElementById('color-overlay').classList.remove('on');
-  document.getElementById('challenge-overlay').classList.remove('on');
-  document.getElementById('quiz-overlay').classList.remove('on');
-  document.getElementById('win-overlay').classList.remove('on');
-  showScreen('room-screen');
-}
-
-// ═══════════════════════════════════════
-// COPY CODE
-// ═══════════════════════════════════════
 function copyCode() {
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(roomCode).then(()=>notify('Code copied! ' + roomCode));
-  } else {
-    // Fallback for HTTP or older browsers (iOS < 13.4, old Android)
-    const ta = document.createElement('textarea');
-    ta.value = roomCode;
-    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    try { document.execCommand('copy'); notify('Code copied! ' + roomCode); }
-    catch(e) { notify('Code: ' + roomCode); }
-    document.body.removeChild(ta);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(roomCode).then(function(){toast('Copied: '+roomCode,'ok');});
+  } else { toast('Code: '+roomCode,'inf'); }
+}
+
+/* ════════════════════════════════════════════════
+   START ONLINE GAME (host)
+   ════════════════════════════════════════════════ */
+function startOnlineGame() {
+  if(!db)return;
+  db.ref('rooms/'+roomCode).once('value').then(function(snap){
+    var r=snap.val();
+    var players=r.players||{};
+    var pkeys=Object.keys(players);
+    if(pkeys.length<2){toast('Need at least 2 players!','err');return;}
+    var cats=r.categories||['nouns','adjectives','verbs'];
+    var deck=buildDeck(cats,r.pairCount||8);
+    shuffle(pkeys);
+    var sc={};
+    for(var i=0;i<pkeys.length;i++) sc[pkeys[i]]=0;
+    db.ref('rooms/'+roomCode).update({
+      status:'playing',deck:deck,turnOrder:pkeys,turnIdx:0,
+      flipped:[],matched:{},scores:sc,startTime:Date.now(),moveCount:0
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════
+   LAUNCH ONLINE GAME (all players)
+   ════════════════════════════════════════════════ */
+var _gameLoaded = false;
+function launchOnlineGame(r) {
+  if(_gameLoaded)return; _gameLoaded=true;
+  cards=r.deck||[]; scores=r.scores||{};
+  turnOrder=r.turnOrder||[]; turnIdx=r.turnIdx||0;
+  matched=r.matched||{}; flipped=r.flipped||[];
+  pairCount=r.pairCount||8;
+  onlineMode=true; gameStartTime=r.startTime||Date.now();
+  show('game'); renderBoard(); renderScores(); renderTurn();
+  canFlip=isMyTurn()&&flipped.length<2;
+  document.getElementById('btn-skip').disabled=!isMyTurn();
+  db.ref('rooms/'+roomCode).on('value',function(snap){
+    if(!snap.exists())return;
+    var rv=snap.val();
+    if(rv.status==='ended'){showResults(rv.scores,rv.winner,rv.moveCount,rv.duration);return;}
+    if(rv.status!=='playing')return;
+    scores=rv.scores||{}; turnOrder=rv.turnOrder||[];
+    turnIdx=rv.turnIdx||0; matched=rv.matched||{}; flipped=rv.flipped||[];
+    updateCards(); renderScores(); renderTurn();
+    canFlip=isMyTurn()&&flipped.length<2;
+    document.getElementById('btn-skip').disabled=!isMyTurn();
+  });
+}
+
+function isMyTurn() {
+  return turnOrder.length>0 && turnOrder[turnIdx]===sanitize(myName);
+}
+
+/* ════════════════════════════════════════════════
+   RENDER BOARD
+   ════════════════════════════════════════════════ */
+function renderBoard() {
+  var catLabels={nouns:'Noun',adjectives:'Adj',verbs:'Verb'};
+  var grid=document.getElementById('grid');
+  grid.innerHTML='';
+  var leg=document.getElementById('legend');
+  var activeCats={};
+  for(var x=0;x<cards.length;x++) activeCats[cards[x].cat]=true;
+  leg.innerHTML='';
+  var cnames=Object.keys(activeCats);
+  for(var ci=0;ci<cnames.length;ci++){
+    var cls=catCls(cnames[ci]);
+    leg.innerHTML+='<span><span class="dot '+cls+'"></span>'+catLabels[cnames[ci]]+'</span>';
+  }
+  leg.innerHTML+='<span><span class="dot reg"></span>Regular</span>';
+  leg.innerHTML+='<span><span class="dot irr"></span>Irregular</span>';
+  for(var i=0;i<cards.length;i++){
+    (function(idx){
+      var card=cards[idx];
+      var cls=catCls(card.cat);
+      var wrap=document.createElement('div');
+      wrap.className='cw';
+      if(matched[card.pid])              wrap.classList.add('matched','flipped');
+      else if(flipped.indexOf(idx)>=0)   wrap.classList.add('flipped');
+      wrap.innerHTML=
+        '<div class="ci">'+
+          '<div class="cf cb"><div class="cb-ico">🃏</div></div>'+
+          '<div class="cf '+cls+'">'+
+            '<span class="cbadge '+cls+'">'+catLabels[card.cat]+'</span>'+
+            '<span class="tbadge '+card.wt+'">'+card.wt+'</span>'+
+            '<span class="cword">'+card.word+'</span>'+
+            '<span class="chint">'+card.hint+'</span>'+
+          '</div>'+
+        '</div>';
+      wrap.addEventListener('click',function(){flipCard(idx);});
+      grid.appendChild(wrap);
+    })(i);
   }
 }
 
-// ═══════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════
-hostStartGame = async function() {
-  var snap = await roomRef.once('value');
-  var data = snap.val();
-  var players = Object.values(data.players||{}).sort(function(a,b){ return a.idx-b.idx; });
-  if(players.length < 2) {
-    document.getElementById('lobby-err').textContent = 'You need at least 2 players.';
-    return;
-  }
-
-  // Shuffle player order randomly — preserved for the whole game
-  for(var s = players.length - 1; s > 0; s--) {
-    var r = Math.floor(Math.random() * (s + 1));
-    var tmp = players[s]; players[s] = players[r]; players[r] = tmp;
-  }
-
-  var deck = buildDeck();
-  var hands = players.map(function(){ return []; });
-  for(var i = 0; i < 7; i++) {
-    players.forEach(function(_, pi){ hands[pi].push(deck.shift()); });
-  }
-  var top = deck.shift();
-  while(top.type === 'wild4'){ deck.push(top); shuffle(deck); top = deck.shift(); }
-
-  var game = {
-    deck: deck.slice(0, 200),
-    discard: [top],
-    hands: (function(){
-      var h = {};
-      hands.forEach(function(hand, i){ h[i] = hand; });
-      return h;
-    })(),
-    playerNames: (function(){
-      var n = {};
-      players.forEach(function(p, i){ n[i] = p.name; });
-      return n;
-    })(),
-    playerOrder: players.map(function(p){ return p.name; }),
-    current: 0,
-    direction: 1,
-    status: 'playing',
-    message: players[0].name + "'s turn",
-    lastAction: Date.now(),
-    pendingWild: false,
-    pendingChallenge: false,
-    lastWildPlayer: -1
-  };
-  await roomRef.update({ status: 'playing', game: game });
-};
-
-// init — wait for DOM, only run if Firebase loaded OK
-if (typeof db !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function(){ showScreen('room-screen'); });
-  } else {
-    showScreen('room-screen');
+function updateCards() {
+  var wraps=document.querySelectorAll('.cw');
+  for(var i=0;i<wraps.length;i++){
+    var c=cards[i];
+    wraps[i].classList.remove('flipped','matched','wrong');
+    if(matched[c.pid])               wraps[i].classList.add('matched','flipped');
+    else if(flipped.indexOf(i)>=0)   wraps[i].classList.add('flipped');
   }
 }
+
+function renderScores() {
+  var bar=document.getElementById('sbar');
+  bar.innerHTML='';
+  var mySan=sanitize(myName);
+  var keys=Object.keys(scores).sort(function(a,b){return scores[b]-scores[a];});
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];
+    var isTurn=turnOrder.length>0&&turnOrder[turnIdx]===k;
+    var pill=document.createElement('div');
+    pill.className='spill'+(isTurn?' turn':'');
+    pill.innerHTML=(k===mySan?'👤 ':'👥 ')+k+' <span class="pts">'+scores[k]+'</span>';
+    bar.appendChild(pill);
+  }
+}
+
+function renderTurn() {
+  var banner=document.getElementById('tbanner');
+  if(onlineMode){
+    var who=turnOrder[turnIdx]||'';
+    if(who===sanitize(myName)){
+      banner.textContent='✨ Your turn! Flip two cards.';
+      banner.className='tbanner mine';
+    } else {
+      banner.textContent='⏳ '+who+"'s turn…";
+      banner.className='tbanner theirs';
+    }
+  } else {
+    banner.textContent='✨ Your turn! Flip two cards.';
+    banner.className='tbanner mine';
+  }
+}
+
+/* ════════════════════════════════════════════════
+   FLIP CARD
+   ════════════════════════════════════════════════ */
+function flipCard(idx) {
+  if(!canFlip)return;
+  if(matched[cards[idx].pid])return;
+  if(flipped.indexOf(idx)>=0)return;
+  if(onlineMode&&!isMyTurn()){toast("Not your turn!",'err');return;}
+
+  moveCount++;
+  flipped.push(idx);
+  var wraps=document.querySelectorAll('.cw');
+  wraps[idx].classList.add('flipped');
+  document.getElementById('btn-skip').disabled=true;
+
+  if(onlineMode) db.ref('rooms/'+roomCode).update({flipped:flipped,moveCount:moveCount});
+
+  if(flipped.length<2)return;
+  canFlip=false;
+
+  var i1=flipped[0],i2=flipped[1];
+  var c1=cards[i1],c2=cards[i2];
+
+  setTimeout(function(){
+    if(c1.pid===c2.pid&&c1.side!==c2.side){
+      /* ✅ MATCH */
+      matched[c1.pid]=true;
+      var mySan=sanitize(myName);
+      scores[mySan]=(scores[mySan]||0)+1;
+      if(onlineMode) db.ref('rooms/'+roomCode+'/matched/'+c1.pid).set(true);
+      flipped=[];
+      updateCards(); renderScores();
+      canFlip=true;
+      document.getElementById('btn-skip').disabled=false;
+      var totalMatched=Object.keys(matched).length;
+      if(totalMatched>=pairCount){
+        var dur=elapsed();
+        if(onlineMode){
+          var winner=Object.keys(scores).sort(function(a,b){return scores[b]-scores[a];})[0];
+          db.ref('rooms/'+roomCode).update({status:'ended',scores:scores,winner:winner,moveCount:moveCount,duration:dur});
+        } else {
+          setTimeout(function(){showResults(scores,mySan,moveCount,dur);},400);
+        }
+      } else {
+        toast('Match! Keep going! 🎉','ok');
+        if(onlineMode){
+          db.ref('rooms/'+roomCode).update({flipped:[],scores:scores});
+        }
+      }
+    } else {
+      /* ❌ NO MATCH */
+      var w1=wraps[i1],w2=wraps[i2];
+      if(w1)w1.classList.add('wrong');
+      if(w2)w2.classList.add('wrong');
+      setTimeout(function(){
+        if(w1){w1.classList.remove('flipped','wrong');}
+        if(w2){w2.classList.remove('flipped','wrong');}
+        flipped=[];
+        if(onlineMode){
+          var next=(turnIdx+1)%turnOrder.length;
+          db.ref('rooms/'+roomCode).update({flipped:[],turnIdx:next,scores:scores});
+        } else {
+          canFlip=true;
+          document.getElementById('btn-skip').disabled=false;
+                }
+      },800);
+    }
+  },900);
+}
+
+/* ════════════════════════════════════════════════
+   SKIP
+   ════════════════════════════════════════════════ */
+function skipTurn() {
+  if(!canFlip)return;
+  flipped=[];
+  if(onlineMode){
+    var next=(turnIdx+1)%turnOrder.length;
+    db.ref('rooms/'+roomCode).update({flipped:[],turnIdx:next});
+  } else {
+    updateCards();
+    canFlip=true;
+    document.getElementById('btn-skip').disabled=false;
+    }
+  toast('Turn skipped','inf');
+}
+
+/* ════════════════════════════════════════════════
+   RESULTS
+   ════════════════════════════════════════════════ */
+function showResults(sc, winner, moves, dur) {
+  if(document.getElementById('results').classList.contains('on'))return;
+  if(db&&inRoom) db.ref('rooms/'+roomCode).off();
+  show('results'); _gameLoaded=false;
+
+  var mySan=sanitize(myName);
+  var iWon=(winner===mySan);
+  document.getElementById('rtrophy').textContent = iWon?'🏆':'🎮';
+  document.getElementById('rtitle').textContent  = iWon?'You Win! 🎉':(winner||'?')+' Wins!';
+
+  /* podium */
+  var keys=Object.keys(sc||{}).sort(function(a,b){return (sc[b]||0)-(sc[a]||0);});
+  var medals=['🥇','🥈','🥉'];
+  var pod=document.getElementById('podium');
+  pod.innerHTML='';
+  for(var i=0;i<keys.length;i++){
+    var row=document.createElement('div');
+    row.className='prow'+(i===0?' win':'');
+    row.innerHTML='<span class="medal">'+(medals[i]||'')+'</span><span class="pname">'+keys[i]+'</span><span class="pscore">'+sc[keys[i]]+' pts</span>';
+    pod.appendChild(row);
+  }
+
+  /* stats */
+  var mins=Math.floor((dur||0)/60);
+  var secs=(dur||0)%60;
+  var timeStr=mins>0?mins+'m '+pad(secs)+'s':pad(secs)+'s';
+  var accuracy=moves>0?Math.round((pairCount/moves)*100)+'%':'—';
+  var sg=document.getElementById('stats-grid');
+  sg.innerHTML=
+    '<div class="stat-box"><span class="stat-val">'+(sc[mySan]||0)+'</span><span class="stat-lbl">Pairs Found</span></div>'+
+    '<div class="stat-box"><span class="stat-val">'+(moves||0)+'</span><span class="stat-lbl">Total Moves</span></div>'+
+    '<div class="stat-box"><span class="stat-val">'+timeStr+'</span><span class="stat-lbl">Time</span></div>'+
+    '<div class="stat-box"><span class="stat-val">'+accuracy+'</span><span class="stat-lbl">Accuracy</span></div>'+
+    '<div class="stat-box"><span class="stat-val">'+pairCount+'</span><span class="stat-lbl">Total Pairs</span></div>'+
+    '<div class="stat-box"><span class="stat-val">'+(iWon?'🏆':'🎮')+'</span><span class="stat-lbl">Result</span></div>';
+}
+
+function playAgain() {
+  _gameLoaded=false;   if(onlineMode&&myRole==='host'){
+    db.ref('rooms/'+roomCode).update({status:'waiting',deck:null,scores:null,matched:null,flipped:null,winner:null,moveCount:null,duration:null});
+    show('waiting');
+  } else if(onlineMode){
+    show('waiting');
+  } else {
+    startSolo();
+  }
+}
+
+function leaveRoom() {
+  _gameLoaded=false; onlineMode=false;
+  if(db&&inRoom&&roomCode){
+    db.ref('rooms/'+roomCode).off();
+    if(myRole==='host') db.ref('rooms/'+roomCode+'/status').set('ended');
+    else db.ref('rooms/'+roomCode+'/players/'+sanitize(myName)).remove();
+  }
+  inRoom=false;roomCode='';myRole='';
+  cards=[];flipped=[];matched={};scores={};turnOrder=[];
+  show('lobby');
+}
+
+/* ════════════════════════════════════════════════
+   WIRE ALL BUTTONS
+   ════════════════════════════════════════════════ */
+document.getElementById('btn-solo').addEventListener('click',   startSolo);
+document.getElementById('btn-create').addEventListener('click', createRoom);
+document.getElementById('btn-join').addEventListener('click',   joinRoom);
+document.getElementById('code-display').addEventListener('click',copyCode);
+document.getElementById('btn-start').addEventListener('click',  startOnlineGame);
+document.getElementById('btn-leave-h').addEventListener('click',leaveRoom);
+document.getElementById('btn-leave-g').addEventListener('click',leaveRoom);
+document.getElementById('btn-skip').addEventListener('click',   skipTurn);
+document.getElementById('btn-quit').addEventListener('click',   leaveRoom);
+document.getElementById('btn-again').addEventListener('click',  playAgain);
+document.getElementById('btn-lobby').addEventListener('click',  leaveRoom);
+
+var cats=document.querySelectorAll('.cat');
+for(var ci=0;ci<cats.length;ci++){
+  (function(btn){btn.addEventListener('click',function(){toggleCat(btn);});})(cats[ci]);
+}
+document.getElementById('solo-name').addEventListener('keydown',function(e){if(e.key==='Enter')startSolo();});
+document.getElementById('mp-name').addEventListener('keydown',function(e){if(e.key==='Enter')createRoom();});
+document.getElementById('room-code-input').addEventListener('keydown',function(e){if(e.key==='Enter')joinRoom();});
 </script>
 </body>
 </html>
