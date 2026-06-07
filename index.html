@@ -359,6 +359,50 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
 }
 .quiz-feedback.ok   { background: #EAFAF1; color: #1E8449; border: 1.5px solid #27AE60; }
 .quiz-feedback.fail { background: #FDECEB; color: #C0392B; border: 1.5px solid #E74C3C; }
+
+/* ── MENU OPTIONS (World Tourist style) ── */
+.menu-option {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  max-width: 460px; width: 100%; cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+  box-shadow: var(--shadow); text-align: left;
+  -webkit-appearance: none; appearance: none;
+  touch-action: manipulation;
+}
+.menu-option:hover { border-color: var(--red); box-shadow: 0 6px 24px rgba(231,76,60,.15); transform: translateY(-2px); }
+.menu-option:active { transform: scale(.98); }
+.menu-option-icon { font-size: 28px; flex-shrink: 0; width: 44px; text-align: center; }
+.menu-option-text { display: flex; flex-direction: column; gap: 3px; }
+.menu-option-title { font-family: 'Fredoka One', sans-serif; font-size: 17px; color: var(--text); }
+.menu-option-desc  { font-size: 13px; color: var(--text2); line-height: 1.4; }
+
+/* Sub-panels that expand below the option */
+.menu-panel {
+  display: none; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  padding: 20px; max-width: 460px; width: 100%;
+  box-shadow: var(--shadow); flex-direction: column; gap: 10px;
+}
+.menu-panel.open { display: flex; }
+.menu-panel-title { font-family: 'Fredoka One', sans-serif; font-size: 15px; color: var(--text2); margin-bottom: 2px; }
+
+/* ── AI SOLO MODE PANEL ── */
+.ai-row { display: flex; flex-direction: column; gap: 6px; }
+.ai-row-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+.ai-btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.ai-seg-btn {
+  flex: 1; padding: 10px 8px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--text2); cursor: pointer; text-align: center;
+  touch-action: manipulation; -webkit-appearance: none; transition: all .15s;
+}
+.ai-seg-btn.sel-red    { background: var(--red-light);    border-color: var(--red);    color: var(--red); }
+.ai-seg-btn.sel-blue   { background: var(--blue-light);   border-color: var(--blue);   color: var(--blue); }
+.ai-seg-btn.sel-green  { background: var(--green-light);  border-color: var(--green);  color: var(--green); }
+.ai-seg-btn.sel-yellow { background: var(--yellow-light); border-color: var(--yellow); color: var(--yellow); }
 </style>
 </head>
 <body>
@@ -368,25 +412,69 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
   <div class="room-logo">UNO</div>
   <div class="room-sub">🔤 Irregular Verbs</div>
 
-  <div class="room-cards">
-    <!-- HOST -->
-    <div class="room-card">
-      <div class="room-card-title host">🎙 I am the Host (Teacher)</div>
-      <input class="inp" id="host-name" placeholder="Your name" maxlength="20" autocorrect="off">
-      <button class="btn btn-red" onclick="createRoom()">Create room</button>
-      <div class="err-msg" id="host-err"></div>
+  <!-- MENU OPTIONS -->
+  <button class="menu-option" onclick="togglePanel('panel-solo')" id="opt-solo">
+    <div class="menu-option-icon">🤖</div>
+    <div class="menu-option-text">
+      <div class="menu-option-title">Play vs Computer</div>
+      <div class="menu-option-desc">Solo practice against AI opponents</div>
     </div>
-    <!-- JOIN -->
-    <div class="room-card">
-      <div class="room-card-title join">🎮 Join as a Player</div>
-      <input class="inp" id="join-name" placeholder="Your name" maxlength="20" autocorrect="off">
-      <input class="inp code" id="join-code" placeholder="ROOM CODE" maxlength="6" autocorrect="off" autocapitalize="characters" oninput="this.value=this.value.toUpperCase()">
-      <button class="btn btn-blue" onclick="joinRoom()">Join</button>
-      <div class="err-msg" id="join-err"></div>
+  </button>
+  <div class="menu-panel" id="panel-solo">
+    <div class="ai-row">
+      <div class="ai-row-label">Your name</div>
+      <input class="inp" id="solo-name" placeholder="Your name" maxlength="20" autocorrect="off">
     </div>
+    <div class="ai-row">
+      <div class="ai-row-label">Number of AI opponents</div>
+      <div class="ai-btn-group" id="ai-count-btns">
+        <button class="ai-seg-btn sel-red" onclick="selectAiCount(1)">1 CPU</button>
+        <button class="ai-seg-btn" onclick="selectAiCount(2)">2 CPUs</button>
+        <button class="ai-seg-btn" onclick="selectAiCount(3)">3 CPUs</button>
+      </div>
+    </div>
+    <div class="ai-row">
+      <div class="ai-row-label">AI Difficulty</div>
+      <div class="ai-btn-group" id="ai-diff-btns">
+        <button class="ai-seg-btn" onclick="selectAiDiff('easy')">😊 Easy</button>
+        <button class="ai-seg-btn sel-blue" onclick="selectAiDiff('medium')">🎯 Medium</button>
+        <button class="ai-seg-btn" onclick="selectAiDiff('hard')">🔥 Hard</button>
+      </div>
+    </div>
+    <button class="btn btn-red" onclick="startSoloGame()">▶ Start game</button>
+    <div class="err-msg" id="solo-err"></div>
   </div>
 
-  <div style="max-width:440px;width:100%;background:white;border-radius:14px;border:1.5px solid var(--border);padding:18px 20px;font-size:13px;color:var(--text2);line-height:1.7;box-shadow:var(--shadow)">
+  <button class="menu-option" onclick="togglePanel('panel-host')" id="opt-host">
+    <div class="menu-option-icon">🎙</div>
+    <div class="menu-option-text">
+      <div class="menu-option-title">Host online game</div>
+      <div class="menu-option-desc">Create a room — students join from their devices</div>
+    </div>
+  </button>
+  <div class="menu-panel" id="panel-host">
+    <div class="menu-panel-title">Your name</div>
+    <input class="inp" id="host-name" placeholder="Your name" maxlength="20" autocorrect="off">
+    <button class="btn btn-red" onclick="createRoom()">Create room</button>
+    <div class="err-msg" id="host-err"></div>
+  </div>
+
+  <button class="menu-option" onclick="togglePanel('panel-join')" id="opt-join">
+    <div class="menu-option-icon">🔗</div>
+    <div class="menu-option-text">
+      <div class="menu-option-title">Join online game</div>
+      <div class="menu-option-desc">Enter a room code from the host</div>
+    </div>
+  </button>
+  <div class="menu-panel" id="panel-join">
+    <div class="menu-panel-title">Your name</div>
+    <input class="inp" id="join-name" placeholder="Your name" maxlength="20" autocorrect="off">
+    <input class="inp code" id="join-code" placeholder="ROOM CODE" maxlength="6" autocorrect="off" autocapitalize="characters" oninput="this.value=this.value.toUpperCase()">
+    <button class="btn btn-blue" onclick="joinRoom()">Join</button>
+    <div class="err-msg" id="join-err"></div>
+  </div>
+
+  <div style="max-width:460px;width:100%;background:white;border-radius:14px;border:1.5px solid var(--border);padding:16px 20px;font-size:13px;color:var(--text2);line-height:1.7;box-shadow:var(--shadow)">
     <strong style="color:var(--text);font-size:14px;">📋 Quick rules</strong><br>
     Play a card that matches in <b>color</b> or <b>verb tense</b>.<br>
     Special cards: <b>Skip</b>, <b>Reverse</b>, <b>+2</b>, <b>Wild</b>, <b>Wild +4</b>.<br>
@@ -738,6 +826,7 @@ if (window.speechSynthesis) {
 // STATE
 // ═══════════════════════════════════════
 let myRole = null, myName = '', roomCode = '', myIdx = -1;
+let soloMode = false;
 let roomRef = null, gameRef = null;
 let localGame = null;  // full game snapshot
 let pendingWild = false; // waiting for color pick
@@ -757,6 +846,289 @@ function shuffle(a) {
 }
 function showEl(id){ document.getElementById(id).style.display='flex'; }
 function hideEl(id){ document.getElementById(id).style.display='none'; }
+// ═══════════════════════════════════════
+// SOLO / AI MODE
+// ═══════════════════════════════════════
+var aiCount = 1;
+var aiDiff  = 'medium';
+var aiNames = ['CPU Alpha','CPU Beta','CPU Gamma'];
+var AI_ACCURACY = { easy: 0.45, medium: 0.75, hard: 0.96 };
+
+function selectAiCount(n) {
+  aiCount = n;
+  var btns = document.getElementById('ai-count-btns').querySelectorAll('.ai-seg-btn');
+  btns.forEach(function(b, i) {
+    b.className = 'ai-seg-btn' + (i === n-1 ? ' sel-red' : '');
+  });
+}
+
+function selectAiDiff(d) {
+  aiDiff = d;
+  var btns = document.getElementById('ai-diff-btns').querySelectorAll('.ai-seg-btn');
+  var cls = {easy:'sel-green', medium:'sel-blue', hard:'sel-red'};
+  btns.forEach(function(b) {
+    var bd = b.textContent.trim().toLowerCase().replace(/[^a-z]/g,'');
+    b.className = 'ai-seg-btn' + (bd === d ? ' '+cls[d] : '');
+  });
+}
+
+function startSoloGame() {
+  var name = document.getElementById('solo-name').value.trim();
+  if (!name) { document.getElementById('solo-err').textContent = 'Please enter your name.'; return; }
+  soloMode = true;
+  myRole = 'host';
+  myName = name;
+  myIdx  = 0;
+  roomCode = 'LOCAL';
+
+  var playerNames = {0: name};
+  for (var i = 0; i < aiCount; i++) playerNames[i+1] = aiNames[i];
+
+  var n = aiCount + 1;
+  var deck = buildDeck();
+  var hands = {};
+  for (var p = 0; p < n; p++) hands[p] = [];
+  for (var c = 0; c < 7; c++) {
+    for (var p = 0; p < n; p++) hands[p].push(deck.shift());
+  }
+  var top = deck.shift();
+  while (top.type === 'wild4') { deck.push(top); shuffle(deck); top = deck.shift(); }
+
+  localGame = {
+    deck: deck, discard: [top], hands: hands,
+    playerNames: playerNames, playerOrder: Object.values(playerNames),
+    current: 0, direction: 1, status: 'playing',
+    message: name + "'s turn",
+    lastAction: Date.now(),
+    pendingWild: false, pendingChallenge: false, lastWildPlayer: -1
+  };
+
+  showScreen('game-screen');
+  document.getElementById('tb-code').textContent = '🤖 vs AI';
+  renderGame();
+}
+
+function soloUpdate(updates) {
+  // Apply updates to localGame directly (no Firebase in solo mode)
+  for (var k in updates) {
+    if (k.indexOf('/') !== -1) {
+      // nested path like hands/1
+      var parts = k.split('/');
+      if (!localGame[parts[0]]) localGame[parts[0]] = {};
+      localGame[parts[0]][parts[1]] = updates[k];
+    } else {
+      localGame[k] = updates[k];
+    }
+  }
+  if (localGame.status === 'won') { showWin(localGame.winner); return; }
+  renderGame();
+  // Trigger AI turn if needed
+  if (localGame.current !== myIdx && localGame.status === 'playing') {
+    setTimeout(runAiTurn, 900);
+  }
+}
+
+function runAiTurn() {
+  var g = localGame;
+  if (!g || g.status !== 'playing') return;
+  if (g.current === myIdx) return; // human's turn
+  if (g.pendingWild) { aiChooseColor(); return; }
+  if (g.pendingChallenge) { aiResolveChallenge(); return; }
+
+  var aiIdx   = g.current;
+  var aiName  = (g.playerNames||{})[aiIdx] || ('CPU ' + aiIdx);
+  var hand    = (g.hands[aiIdx] || []).slice();
+  var top     = g.discard[g.discard.length - 1];
+  var n       = Object.keys(g.playerNames).length;
+
+  // Find playable cards
+  var playable = hand.map(function(c, i){ return {c:c, i:i}; })
+                     .filter(function(x){ return canPlay(x.c, top); });
+
+  if (playable.length === 0) {
+    // Draw a card
+    var newGame = JSON.parse(JSON.stringify(g));
+    var drawn = drawFromLocal(newGame, 1);
+    newGame.hands[aiIdx] = newGame.hands[aiIdx].concat(drawn);
+    newGame.message = aiName + ' drew a card.';
+    // advance turn
+    var nextIdx = (aiIdx + newGame.direction + n) % n;
+    newGame.current = nextIdx;
+    newGame.message += ' ' + (newGame.playerNames[nextIdx]||'') + "'s turn.";
+    localGame = newGame;
+    renderGame();
+    if (localGame.current !== myIdx) setTimeout(runAiTurn, 800);
+    return;
+  }
+
+  // Pick best card: prefer specials, then wild, then verb
+  playable.sort(function(a, b) {
+    var order = {wild4:0, wild:1, skip:2, reverse:3, draw2:4, verb:5};
+    return (order[a.c.type]||5) - (order[b.c.type]||5);
+  });
+  var pick = playable[0];
+
+  // For verb cards: answer quiz based on difficulty
+  if (pick.c.type === 'verb') {
+    var acc = AI_ACCURACY[aiDiff] || 0.75;
+    var correct = Math.random() < acc;
+    if (!correct) {
+      // Wrong answer: draw 1, keep turn
+      var newGame = JSON.parse(JSON.stringify(g));
+      var drawn = drawFromLocal(newGame, 1);
+      newGame.hands[aiIdx] = newGame.hands[aiIdx].concat(drawn);
+      newGame.message = aiName + ' answered wrong and draws 1 card.';
+      var nextIdx = (aiIdx + newGame.direction + n) % n;
+      newGame.current = nextIdx;
+      localGame = newGame;
+      renderGame();
+      if (localGame.current !== myIdx) setTimeout(runAiTurn, 800);
+      return;
+    }
+  }
+
+  // Play the card
+  var newGame = JSON.parse(JSON.stringify(g));
+  var cardToPlay = newGame.hands[aiIdx].splice(pick.i, 1)[0];
+  newGame.discard.push(cardToPlay);
+
+  if (newGame.hands[aiIdx].length === 0) {
+    newGame.status = 'won';
+    newGame.winner = aiName;
+    localGame = newGame;
+    showWin(aiName);
+    return;
+  }
+
+  if (cardToPlay.type === 'wild' || cardToPlay.type === 'wild4') {
+    // AI picks most common color in its hand
+    var colorCount = {red:0,blue:0,green:0,yellow:0};
+    newGame.hands[aiIdx].forEach(function(c){ if(c.color && colorCount[c.color]!==undefined) colorCount[c.color]++; });
+    var bestColor = Object.keys(colorCount).sort(function(a,b){ return colorCount[b]-colorCount[a]; })[0];
+    cardToPlay.activeColor = bestColor;
+    newGame.pendingWild = false;
+    if (cardToPlay.type === 'wild4') {
+      var nextIdx = (aiIdx + newGame.direction + n) % n;
+      // AI wild4: next player draws 4 (no challenge logic for simplicity)
+      var drawn = drawFromLocal(newGame, 4);
+      newGame.hands[nextIdx] = (newGame.hands[nextIdx]||[]).concat(drawn);
+      newGame.current = (nextIdx + newGame.direction + n) % n;
+      newGame.message = aiName + ' played Wild +4. ' + bestColor + ' chosen.';
+    } else {
+      newGame.current = (aiIdx + newGame.direction + n) % n;
+      newGame.message = aiName + ' played Wild. ' + bestColor + ' chosen.';
+    }
+  } else {
+    var result = applyCardLocal(cardToPlay, aiIdx, aiName, newGame);
+    newGame = result;
+  }
+
+  newGame.lastAction = Date.now();
+  localGame = newGame;
+  renderGame();
+  if (localGame.current !== myIdx && localGame.status === 'playing') setTimeout(runAiTurn, 900);
+}
+
+function drawFromLocal(g, count) {
+  var drawn = [];
+  for (var i = 0; i < count; i++) {
+    if (g.deck.length === 0) {
+      var top = g.discard.pop();
+      g.deck = shuffle(g.discard.slice());
+      g.discard = [top];
+    }
+    if (g.deck.length > 0) drawn.push(g.deck.shift());
+  }
+  return drawn;
+}
+
+function applyCardLocal(card, playerIdx, playerName, g) {
+  var n = Object.keys(g.playerNames).length;
+  var nextIdx = (playerIdx + g.direction + n) % n;
+  if (card.type === 'skip') {
+    g.current = (playerIdx + g.direction * 2 + n * 2) % n;
+    g.message = playerName + ' played Skip. ' + (g.playerNames[nextIdx]||'') + ' loses a turn.';
+  } else if (card.type === 'reverse') {
+    g.direction *= -1;
+    g.current = n === 2 ? (playerIdx + g.direction * 2 + n*2) % n : (playerIdx + g.direction + n) % n;
+    g.message = playerName + ' played Reverse!';
+  } else if (card.type === 'draw2') {
+    var drawn = drawFromLocal(g, 2);
+    g.hands[nextIdx] = (g.hands[nextIdx]||[]).concat(drawn);
+    g.current = (playerIdx + g.direction * 2 + n * 2) % n;
+    g.message = playerName + ' played +2. ' + (g.playerNames[nextIdx]||'') + ' draws 2.';
+  } else {
+    g.current = nextIdx;
+    g.message = playerName + ' played ' + (card.verb ? card.verb[card.vtype] : card.type) + '.';
+  }
+  return g;
+}
+
+function aiChooseColor() {
+  var g = localGame;
+  var aiIdx = g.lastWildPlayer;
+  var hand  = (g.hands[aiIdx]||[]);
+  var colorCount = {red:0,blue:0,green:0,yellow:0};
+  hand.forEach(function(c){ if(c.color && colorCount[c.color]!==undefined) colorCount[c.color]++; });
+  var bestColor = Object.keys(colorCount).sort(function(a,b){ return colorCount[b]-colorCount[a]; })[0];
+  var newGame = JSON.parse(JSON.stringify(g));
+  newGame.discard[newGame.discard.length-1].activeColor = bestColor;
+  newGame.pendingWild = false;
+  var n = Object.keys(newGame.playerNames).length;
+  newGame.current = (aiIdx + newGame.direction + n) % n;
+  newGame.message = (newGame.playerNames[aiIdx]||'AI') + ' chose ' + bestColor + '.';
+  localGame = newGame;
+  renderGame();
+  if (localGame.current !== myIdx) setTimeout(runAiTurn, 800);
+}
+
+function aiResolveChallenge() {
+  // AI always accepts +4 (simpler, fair)
+  var g = JSON.parse(JSON.stringify(localGame));
+  var n = Object.keys(g.playerNames).length;
+  var drawn = drawFromLocal(g, 4);
+  g.hands[g.current] = (g.hands[g.current]||[]).concat(drawn);
+  g.pendingChallenge = false;
+  g.current = (g.current + g.direction + n) % n;
+  g.message = (g.playerNames[g.current-1]||'AI') + ' accepted +4.';
+  localGame = g;
+  renderGame();
+  if (localGame.current !== myIdx) setTimeout(runAiTurn, 800);
+}
+
+function gameUpdate(updates) {
+  if (soloMode) { soloUpdate(updates); return; }
+  roomRef.child('game').update(updates);
+}
+
+// ═══════════════════════════════════════
+// MENU PANEL TOGGLE
+// ═══════════════════════════════════════
+function togglePanel(panelId) {
+  var panels = ['panel-solo', 'panel-host', 'panel-join'];
+  panels.forEach(function(id) {
+    var panel = document.getElementById(id);
+    var opt   = document.getElementById('opt-' + id.replace('panel-',''));
+    if (!panel || !opt) return;
+    if (id === panelId) {
+      var isOpen = panel.classList.contains('open');
+      panel.classList.toggle('open', !isOpen);
+      opt.style.borderColor = !isOpen ? 'var(--red)' : '';
+      opt.style.background  = !isOpen ? 'var(--red-light)' : '';
+      // Auto-focus first input in panel
+      if (!isOpen) {
+        var inp = panel.querySelector('input');
+        if (inp) setTimeout(function(){ inp.focus(); }, 120);
+      }
+    } else {
+      // Close other panels
+      panel.classList.remove('open');
+      opt.style.borderColor = '';
+      opt.style.background  = '';
+    }
+  });
+}
+
 function showScreen(id) {
   ['room-screen','lobby-screen','game-screen'].forEach(function(s) {
     var el = document.getElementById(s);
@@ -1010,7 +1382,7 @@ function renderGame() {
   if (!isMyTurn) document.getElementById('quiz-overlay').classList.remove('on');
 
   // topbar
-  document.getElementById('tb-code').textContent = '🔑 '+roomCode;
+  document.getElementById('tb-code').textContent = soloMode ? '🤖 vs AI' : '🔑 '+roomCode;
   document.getElementById('tb-turn').textContent = isMyTurn ? '⭐ Your turn' : `Turn: ${players[g.current]?.name||'?'}`;
 
   // players strip
@@ -1241,7 +1613,7 @@ function penalizeWrongAnswer() {
   }
   var drawn = newDeck.shift();
   if (drawn) newHands[myIdx].push(drawn);
-  roomRef.child('game').update({
+  gameUpdate({
     hands: newHands, deck: newDeck, discard: newDiscard,
     message: myName + ' answered wrong and draws 1 card.',
     lastAction: Date.now()
@@ -1291,7 +1663,7 @@ function executePlay(idx) {
     updates.pendingWild = true;
     updates.lastWildPlayer = myIdx;
     updates.message = myName + ' played ' + (card.type==='wild4'?'Wild +4':'Wild Card') + '. Choose a color.';
-    roomRef.child('game').update(updates);
+    gameUpdate(updates);
     return;
   }
 
@@ -1345,11 +1717,11 @@ function applyCard(card, myHand, g) {
     pendingChallenge: false,
     lastAction: Date.now()
   };
-  roomRef.child('game').update(updates);
+  gameUpdate(updates);
 }
 
 function commitWin(card, myHand, g) {
-  roomRef.child('game').update({
+  gameUpdate({
     [`hands/${myIdx}`]: myHand,
     discard: [...g.discard, card],
     status: 'won',
@@ -1374,7 +1746,7 @@ function chooseColor(color) {
   const nextIdx = (g.current + g.direction + n) % n;
 
   if(topCard.type==='wild4') {
-    roomRef.child('game').update({
+    gameUpdate({
       discard: newDiscard,
       pendingWild: false,
       pendingChallenge: true,
@@ -1383,7 +1755,7 @@ function chooseColor(color) {
     });
   } else {
     const nextPlayer = players[nextIdx];
-    roomRef.child('game').update({
+    gameUpdate({
       discard: newDiscard,
       pendingWild: false,
       pendingChallenge: false,
@@ -1433,7 +1805,7 @@ function resolveChallenge(doChallenge) {
   }
 
   const nextIdx = (g.current + g.direction + n) % n;
-  roomRef.child('game').update({
+  gameUpdate({
     hands: newHands, deck: newDeck, discard: newDiscard,
     pendingChallenge: false,
     current: nextIdx,
@@ -1455,7 +1827,7 @@ function onDrawCard() {
   const drawn = newDeck.shift();
   if(!drawn) return;
   newHands[myIdx].push(drawn);
-  roomRef.child('game').update({
+  gameUpdate({
     hands: newHands, deck: newDeck, discard: newDiscard,
     message: `${myName} drew a card.`
   });
@@ -1471,7 +1843,7 @@ function passTurn() {
   const players = getPlayers();
   const n = players.length;
   const nextIdx = (g.current + g.direction + n) % n;
-  roomRef.child('game').update({
+  gameUpdate({
     current: nextIdx,
     message: `${myName} passed. ${players[nextIdx]?.name||'?'}'s turn.`,
     lastAction: Date.now()
@@ -1482,7 +1854,7 @@ function passTurn() {
 // HOST SKIP PLAYER
 // ═══════════════════════════════════════
 function hostSkipPlayer() {
-  if (myRole !== 'host') return;
+  if (myRole !== 'host' && !soloMode) return;
   var g = localGame;
   if (!g || g.status !== 'playing') return;
   var players = getPlayers();
@@ -1490,7 +1862,7 @@ function hostSkipPlayer() {
   var skippedName = players[g.current] ? players[g.current].name : 'Player';
   var nextIdx = (g.current + g.direction + n) % n;
   document.getElementById('quiz-overlay').classList.remove('on');
-  roomRef.child('game').update({
+  gameUpdate({
     current: nextIdx,
     message: 'Host skipped ' + skippedName + '. ' + (players[nextIdx] ? players[nextIdx].name : '') + "'s turn.",
     lastAction: Date.now()
@@ -1529,7 +1901,7 @@ function callUno() {
   const myHand = g.hands?.[myIdx]||[];
   if(myHand.length===1) {
     notify('🔔 UNO! You said it in time.');
-    roomRef.child('game').update({ message: `🔔 ${myName} said UNO!` });
+    gameUpdate({ message: `🔔 ${myName} said UNO!` });
   } else {
     // Check if someone else has 1 card and didn't say UNO (honor system)
     notify('Only say UNO! when you have 1 card left.');
@@ -1549,10 +1921,13 @@ function showWin(winner) {
 // ═══════════════════════════════════════
 async function restartGame() {
   document.getElementById('win-overlay').classList.remove('on');
+  if (soloMode) {
+    startSoloGame();
+    return;
+  }
   if(myRole==='host') {
     const snap = await roomRef.once('value');
     const data = snap.val();
-    const players = Object.values(data.players||{}).sort((a,b)=>a.idx-b.idx);
     await roomRef.update({ status:'waiting', game:null });
     inGame = false;
     showScreen('lobby-screen');
@@ -1570,7 +1945,8 @@ async function restartGame() {
 // LEAVE
 // ═══════════════════════════════════════
 function leaveRoom() {
-  if(roomRef) roomRef.child('players/'+myIdx+'/online').set(false);
+  soloMode = false;
+  if(roomRef && !soloMode) roomRef.child('players/'+myIdx+'/online').set(false);
   if(roomRef) roomRef.off();
   inGame=false; localGame=null; myRole=null; myIdx=-1; roomRef=null; roomCode='';
   document.getElementById('color-overlay').classList.remove('on');
