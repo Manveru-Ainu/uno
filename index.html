@@ -403,9 +403,64 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
 .ai-seg-btn.sel-blue   { background: var(--blue-light);   border-color: var(--blue);   color: var(--blue); }
 .ai-seg-btn.sel-green  { background: var(--green-light);  border-color: var(--green);  color: var(--green); }
 .ai-seg-btn.sel-yellow { background: var(--yellow-light); border-color: var(--yellow); color: var(--yellow); }
+
+/* ── STATS OVERLAY ── */
+.stats-overlay {
+  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(44,62,80,.7); z-index: 350;
+  align-items: center; justify-content: center;
+  overflow-y: auto; padding: 16px;
+}
+.stats-overlay.on { display: flex; }
+.stats-box {
+  background: white; border-radius: 20px; padding: 24px 20px;
+  max-width: 480px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,.3);
+  max-height: 90vh; overflow-y: auto;
+}
+.stats-title { font-family: 'Fredoka One', sans-serif; font-size: 24px; color: var(--red); text-align: center; margin-bottom: 4px; }
+.stats-sub { font-size: 12px; color: var(--text2); text-align: center; margin-bottom: 16px; }
+.stats-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+.stats-table th { background: var(--bg); color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; padding: 8px 6px; text-align: left; }
+.stats-table td { padding: 10px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.stats-table tr:last-child td { border-bottom: none; }
+.stats-name { font-weight: 800; color: var(--text); font-size: 14px; }
+.stats-badge { display: inline-block; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 13px; margin-right: 4px; }
+.badge-1 { background: #FEF9E7; color: var(--yellow); }
+.badge-2 { background: #F4F6F9; color: var(--text2); }
+.badge-3 { background: #FDECEB; color: var(--red); }
+.pct-bar-wrap { background: var(--bg); border-radius: 20px; height: 8px; width: 100%; margin-top: 3px; min-width: 60px; }
+.pct-bar { height: 8px; border-radius: 20px; transition: width .6s; }
+.bar-green  { background: var(--green); }
+.bar-yellow { background: var(--yellow); }
+.bar-red    { background: var(--red); }
+.stats-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* ── TEACHER PANEL ── */
+.teacher-overlay {
+  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(44,62,80,.7); z-index: 400;
+  align-items: center; justify-content: center; padding: 16px;
+  overflow-y: auto;
+}
+.teacher-overlay.on { display: flex; }
+.teacher-box {
+  background: white; border-radius: 20px; padding: 24px 20px;
+  max-width: 560px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,.3);
+  max-height: 92vh; overflow-y: auto;
+}
+.teacher-title { font-family: 'Fredoka One', sans-serif; font-size: 22px; color: var(--blue); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.session-card { background: var(--bg); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid var(--border); }
+.session-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+.session-date { font-size: 12px; color: var(--text2); }
+.session-mode { font-size: 11px; background: var(--blue-light); color: var(--blue); border-radius: 20px; padding: 2px 8px; font-weight: 700; }
+.session-winner { font-size: 13px; font-weight: 800; color: var(--green); }
+.session-players { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.session-player { font-size: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; color: var(--text); }
+.session-player span { font-weight: 800; }
+.teacher-empty { text-align: center; color: var(--text2); font-size: 14px; padding: 32px 0; }
+.teacher-login { display: flex; flex-direction: column; gap: 10px; max-width: 280px; margin: 0 auto; }
 </style>
 </head>
-  <script src="https://manveru-ainu.github.io/ManveruGames/manveru-credit.js"></script>
 <body>
 
 <!-- ══════════ ROOM SCREEN ══════════ -->
@@ -481,6 +536,14 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
     Special cards: <b>Skip</b>, <b>Reverse</b>, <b>+2</b>, <b>Wild</b>, <b>Wild +4</b>.<br>
     Say <b>UNO!</b> when you have 1 card left, or draw 5.
   </div>
+
+  <button class="menu-option" onclick="openTeacherLogin()" style="border-style:dashed;opacity:.75">
+    <div class="menu-option-icon">🔐</div>
+    <div class="menu-option-text">
+      <div class="menu-option-title">Teacher Dashboard</div>
+      <div class="menu-option-desc">View session history and student statistics</div>
+    </div>
+  </button>
 </div>
 
 <!-- ══════════ LOBBY SCREEN ══════════ -->
@@ -590,6 +653,52 @@ button, .card, .hcard, .btn, .btn-sm, .c-btn { touch-action: manipulation; }
     <div class="win-btns">
       <button class="btn btn-red" style="max-width:180px" onclick="restartGame()">🔄 Play again</button>
       <button class="btn btn-gray" style="max-width:140px" onclick="leaveRoom()">Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ STATS OVERLAY ══════════ -->
+<div class="stats-overlay" id="stats-overlay">
+  <div class="stats-box">
+    <div class="stats-title">🏆 Game Results</div>
+    <div class="stats-sub" id="stats-sub"></div>
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Player</th><th>✅ Correct</th><th>❌ Wrong</th><th>% Score</th>
+        </tr>
+      </thead>
+      <tbody id="stats-tbody"></tbody>
+    </table>
+    <div id="stats-detail"></div>
+    <div class="stats-btns">
+      <button class="btn btn-red" style="max-width:160px" onclick="restartGame()">🔄 Play again</button>
+      <button class="btn btn-gray" style="max-width:140px" onclick="leaveRoom()">Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TEACHER PANEL ══════════ -->
+<div class="teacher-overlay" id="teacher-overlay">
+  <div class="teacher-box">
+    <div class="teacher-title">🔐 Teacher Dashboard</div>
+    <div id="teacher-login-area">
+      <div class="teacher-login">
+        <p style="font-size:13px;color:var(--text2);text-align:center">Enter teacher password to view statistics</p>
+        <input class="inp" id="teacher-pass-input" type="password" placeholder="Password" maxlength="30">
+        <button class="btn btn-blue" onclick="checkTeacherPass()">Access</button>
+        <div class="err-msg" id="teacher-pass-err"></div>
+      </div>
+    </div>
+    <div id="teacher-content" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text2)" id="teacher-session-count"></span>
+        <button class="btn-sm danger" onclick="clearAllSessions()" style="font-size:11px">🗑 Clear all</button>
+      </div>
+      <div id="teacher-sessions"></div>
+    </div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="btn btn-gray" style="max-width:120px" onclick="closeTeacher()">Close</button>
     </div>
   </div>
 </div>
@@ -904,6 +1013,8 @@ function startSoloGame() {
     pendingWild: false, pendingChallenge: false, lastWildPlayer: -1
   };
 
+  initStats(localGame.playerNames);
+  gameStartTime = Date.now();
   showScreen('game-screen');
   document.getElementById('tb-code').textContent = '🤖 vs AI';
   renderGame();
@@ -979,6 +1090,7 @@ function runAiTurn() {
       var drawn = drawFromLocal(newGame, 1);
       newGame.hands[aiIdx] = newGame.hands[aiIdx].concat(drawn);
       newGame.message = aiName + ' answered wrong and draws 1 card.';
+      recordAnswer(aiIdx, aiName, pick.c.verb ? pick.c.verb.b : '', 'p', 'wrong', 'correct', false);
       var nextIdx = (aiIdx + newGame.direction + n) % n;
       newGame.current = nextIdx;
       localGame = newGame;
@@ -988,6 +1100,10 @@ function runAiTurn() {
     }
   }
 
+  // Record correct answer for AI verb cards
+  if (pick.c.type === 'verb') {
+    recordAnswer(aiIdx, aiName, pick.c.verb.b, 'p', 'correct', 'correct', true);
+  }
   // Play the card
   var newGame = JSON.parse(JSON.stringify(g));
   var cardToPlay = newGame.hands[aiIdx].splice(pick.i, 1)[0];
@@ -1100,6 +1216,248 @@ function aiResolveChallenge() {
 function gameUpdate(updates) {
   if (soloMode) { soloUpdate(updates); return; }
   roomRef.child('game').update(updates);
+}
+
+
+// ═══════════════════════════════════════
+// STATS TRACKING
+// ═══════════════════════════════════════
+var TEACHER_PASSWORD = 'bilbao2025';  // Change this!
+var sessionStats = {};  // { playerIdx: { name, correct, wrong, verbs: [{verb,asked,given,ok}] } }
+
+function initStats(playerNames) {
+  sessionStats = {};
+  for (var k in playerNames) {
+    sessionStats[k] = { name: playerNames[k], correct: 0, wrong: 0, verbs: [] };
+  }
+}
+
+function recordAnswer(playerIdx, playerName, verb, askedTense, givenAnswer, correctAnswer, wasCorrect) {
+  if (!sessionStats[playerIdx]) {
+    sessionStats[playerIdx] = { name: playerName, correct: 0, wrong: 0, verbs: [] };
+  }
+  if (wasCorrect) { sessionStats[playerIdx].correct++; }
+  else            { sessionStats[playerIdx].wrong++; }
+  sessionStats[playerIdx].verbs.push({
+    verb: verb, tense: askedTense,
+    given: givenAnswer, correct: correctAnswer, ok: wasCorrect
+  });
+}
+
+function saveSessionToFirebase(winnerName, playerNames) {
+  if (soloMode && typeof db === 'undefined') return;   // skip if no Firebase in solo
+  if (typeof db === 'undefined') return;
+  var n = Object.keys(sessionStats).length;
+  if (n === 0) return;
+
+  // Build sorted leaderboard
+  var players = Object.values(sessionStats).map(function(s) {
+    var total = s.correct + s.wrong;
+    return {
+      name:    s.name,
+      correct: s.correct,
+      wrong:   s.wrong,
+      total:   total,
+      pct:     total > 0 ? Math.round((s.correct / total) * 100) : 0,
+      verbs:   s.verbs
+    };
+  });
+  players.sort(function(a,b){ return b.pct - a.pct; });
+
+  var session = {
+    date:       new Date().toISOString(),
+    mode:       soloMode ? 'Solo vs AI' : 'Online Multiplayer',
+    roomCode:   soloMode ? 'LOCAL' : roomCode,
+    winner:     winnerName,
+    duration:   Math.round((Date.now() - gameStartTime) / 1000),
+    players:    players
+  };
+
+  db.ref('uno_sessions').push(session).catch(function(e){
+    console.warn('Could not save session:', e.message);
+  });
+}
+
+var gameStartTime = Date.now();
+
+// ═══════════════════════════════════════
+// SHOW STATS SCREEN
+// ═══════════════════════════════════════
+function showStats(winnerName) {
+  // Close win overlay if open
+  document.getElementById('win-overlay').classList.remove('on');
+  document.getElementById('stats-overlay').classList.remove('on');
+  document.getElementById('teacher-overlay').classList.remove('on');
+
+  var players = Object.values(sessionStats).map(function(s) {
+    var total = s.correct + s.wrong;
+    return {
+      name:    s.name,
+      correct: s.correct,
+      wrong:   s.wrong,
+      total:   total,
+      pct:     total > 0 ? Math.round((s.correct / total) * 100) : 0,
+      verbs:   s.verbs
+    };
+  });
+  players.sort(function(a,b){ return b.pct - a.pct; });
+
+  var medals = ['🥇','🥈','🥉'];
+  var dur = Math.round((Date.now() - gameStartTime) / 60);
+  document.getElementById('stats-sub').textContent =
+    '🏆 Winner: ' + winnerName + '  ·  ' + players.length + ' players  ·  ~' + dur + ' min';
+
+  // Table
+  var tbody = '';
+  players.forEach(function(p, i) {
+    var pct  = p.pct;
+    var barClass = pct >= 70 ? 'bar-green' : pct >= 40 ? 'bar-yellow' : 'bar-red';
+    tbody += '<tr>' +
+      '<td><span class="stats-badge ' + (i<3?'badge-'+(i+1):'') + '">' + (medals[i]||i+1) + '</span></td>' +
+      '<td class="stats-name">' + p.name + (p.name===winnerName?' 🏆':'') + '</td>' +
+      '<td style="color:var(--green);font-weight:800">' + p.correct + '</td>' +
+      '<td style="color:var(--red);font-weight:800">' + p.wrong + '</td>' +
+      '<td>' +
+        '<div style="font-weight:800;font-size:14px;color:var(--text)">' + pct + '%</div>' +
+        '<div class="pct-bar-wrap"><div class="pct-bar ' + barClass + '" style="width:' + pct + '%"></div></div>' +
+      '</td>' +
+    '</tr>';
+  });
+  document.getElementById('stats-tbody').innerHTML = tbody;
+
+  // Detail: all verb answers
+  var detail = '<div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Verb-by-verb detail</div>';
+  players.forEach(function(p) {
+    if (p.verbs.length === 0) return;
+    detail += '<div style="margin-bottom:12px">';
+    detail += '<div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px">' + p.name + '</div>';
+    p.verbs.forEach(function(v) {
+      var ok = v.ok;
+      detail += '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;margin-bottom:4px;background:' +
+        (ok ? 'var(--green-light)' : 'var(--red-light)') + ';font-size:12px">' +
+        (ok ? '✅' : '❌') + ' ' +
+        '<b>' + v.verb + '</b> → ' + TYPE_LABELS[v.tense] + ': ' +
+        '<span style="font-weight:800;color:' + (ok?'var(--green)':'var(--red)') + '">' + v.given + '</span>' +
+        (ok ? '' : ' <span style="color:var(--text2)">(correct: ' + v.correct + ')</span>') +
+        '</div>';
+    });
+    detail += '</div>';
+  });
+  document.getElementById('stats-detail').innerHTML = detail;
+  document.getElementById('stats-overlay').classList.add('on');
+}
+
+// ═══════════════════════════════════════
+// TEACHER PANEL
+// ═══════════════════════════════════════
+var teacherUnlocked = false;
+
+function openTeacherLogin() {
+  if (teacherUnlocked) {
+    loadTeacherSessions();
+  } else {
+    document.getElementById('teacher-login-area').style.display = 'block';
+    document.getElementById('teacher-content').style.display = 'none';
+    document.getElementById('teacher-pass-input').value = '';
+    document.getElementById('teacher-pass-err').textContent = '';
+  }
+  document.getElementById('teacher-overlay').classList.add('on');
+}
+
+function checkTeacherPass() {
+  var pass = document.getElementById('teacher-pass-input').value;
+  if (pass === TEACHER_PASSWORD) {
+    teacherUnlocked = true;
+    document.getElementById('teacher-login-area').style.display = 'none';
+    loadTeacherSessions();
+  } else {
+    document.getElementById('teacher-pass-err').textContent = 'Incorrect password.';
+  }
+}
+
+function loadTeacherSessions() {
+  document.getElementById('teacher-content').style.display = 'block';
+  document.getElementById('teacher-sessions').innerHTML =
+    '<div style="text-align:center;color:var(--text2);font-size:13px">Loading...</div>';
+
+  if (typeof db === 'undefined') {
+    document.getElementById('teacher-sessions').innerHTML =
+      '<div class="teacher-empty">Firebase not available. Sessions from this solo game:<br><br>' + renderLocalSession() + '</div>';
+    return;
+  }
+
+  db.ref('uno_sessions').orderByChild('date').limitToLast(50).once('value')
+    .then(function(snap) {
+      if (!snap.exists()) {
+        document.getElementById('teacher-sessions').innerHTML =
+          '<div class="teacher-empty">No sessions recorded yet.</div>';
+        document.getElementById('teacher-session-count').textContent = '0 sessions';
+        return;
+      }
+      var sessions = [];
+      snap.forEach(function(child) {
+        sessions.unshift({ key: child.key, data: child.val() });
+      });
+      document.getElementById('teacher-session-count').textContent = sessions.length + ' sessions recorded';
+      var html = '';
+      sessions.forEach(function(s) {
+        html += renderSessionCard(s.key, s.data);
+      });
+      document.getElementById('teacher-sessions').innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('teacher-sessions').innerHTML =
+        '<div class="teacher-empty">Error loading: ' + e.message + '</div>';
+    });
+}
+
+function renderSessionCard(key, s) {
+  var d = new Date(s.date);
+  var dateStr = d.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  var dur = s.duration ? Math.round(s.duration/60) + ' min' : '';
+  var playersHtml = '';
+  (s.players||[]).forEach(function(p) {
+    playersHtml += '<div class="session-player">' + p.name +
+      ' <span>' + p.pct + '%</span>' +
+      ' <span style="color:var(--green)">✅' + p.correct + '</span>' +
+      ' <span style="color:var(--red)">❌' + p.wrong + '</span>' +
+      '</div>';
+  });
+  return '<div class="session-card">' +
+    '<div class="session-header">' +
+      '<div>' +
+        '<div style="font-weight:800;font-size:14px">' + (s.winner||'?') + ' 🏆</div>' +
+        '<div class="session-date">' + dateStr + (dur?' · '+dur:'') + '</div>' +
+      '</div>' +
+      '<span class="session-mode">' + (s.mode||'Online') + '</span>' +
+    '</div>' +
+    '<div class="session-players">' + playersHtml + '</div>' +
+    (s.roomCode && s.roomCode!=='LOCAL' ? '<div style="font-size:11px;color:var(--text2);margin-top:6px">Room: ' + s.roomCode + '</div>' : '') +
+  '</div>';
+}
+
+function renderLocalSession() {
+  if (Object.keys(sessionStats).length === 0) return 'No data yet.';
+  return renderSessionCard('local', {
+    date: new Date().toISOString(), mode: 'Solo vs AI',
+    winner: 'Current game', players: Object.values(sessionStats).map(function(s){
+      var total = s.correct+s.wrong;
+      return { name:s.name, correct:s.correct, wrong:s.wrong, pct: total>0?Math.round(s.correct/total*100):0 };
+    })
+  });
+}
+
+function clearAllSessions() {
+  if (!confirm('Delete ALL session history? This cannot be undone.')) return;
+  if (typeof db === 'undefined') return;
+  db.ref('uno_sessions').remove().then(function() {
+    loadTeacherSessions();
+    notify('All sessions deleted.');
+  });
+}
+
+function closeTeacher() {
+  document.getElementById('teacher-overlay').classList.remove('on');
 }
 
 // ═══════════════════════════════════════
@@ -1348,6 +1706,8 @@ function enterGame(game, players) {
       if (!found) console.warn('UNO: could not find', myName, 'in playerNames, keeping lobby idx');
     }
 
+    initStats(game.playerNames || {});
+    gameStartTime = Date.now();
     showScreen('game-screen');
     listenGame();
   }
@@ -1580,6 +1940,15 @@ function answerQuiz(chosen, correct, cardIdx) {
       btn.classList.add('dimmed');
     }
   });
+
+  // Track the answer
+  var quizCard = (localGame && localGame.hands && localGame.hands[myIdx]) ? null : null;
+  var qVerb = document.getElementById('quiz-verb-big') ? document.getElementById('quiz-verb-big').textContent.replace(/[^a-z ]/gi,'').trim() : '';
+  var qTense = document.getElementById('quiz-q') ? document.getElementById('quiz-q').textContent.replace('What is the ','').replace(' of...','').toLowerCase().replace(' ','_') : '';
+  // Map display tense back to key
+  var tenseKeyMap = {'base form':'b','simple past':'p','past participle':'pp','gerund':'g'};
+  var tenseKey = tenseKeyMap[qTense] || qTense;
+  recordAnswer(myIdx, myName, qVerb, tenseKey, chosen, correct, chosen===correct);
 
   if (chosen === correct) {
     fb.textContent = '🎉 Correct! Playing your card...';
@@ -1913,8 +2282,10 @@ function callUno() {
 // WIN
 // ═══════════════════════════════════════
 function showWin(winner) {
-  document.getElementById('win-name').textContent = `${winner} wins!`;
-  document.getElementById('win-overlay').classList.add('on');
+  // Save to Firebase first, then show stats
+  saveSessionToFirebase(winner, localGame ? (localGame.playerNames || {}) : {});
+  // Short delay so Firebase write fires before overlay
+  setTimeout(function() { showStats(winner); }, 400);
 }
 
 // ═══════════════════════════════════════
@@ -1922,6 +2293,9 @@ function showWin(winner) {
 // ═══════════════════════════════════════
 async function restartGame() {
   document.getElementById('win-overlay').classList.remove('on');
+  document.getElementById('stats-overlay').classList.remove('on');
+  document.getElementById('stats-overlay').classList.remove('on');
+  document.getElementById('teacher-overlay').classList.remove('on');
   if (soloMode) {
     startSoloGame();
     return;
@@ -1954,6 +2328,8 @@ function leaveRoom() {
   document.getElementById('challenge-overlay').classList.remove('on');
   document.getElementById('quiz-overlay').classList.remove('on');
   document.getElementById('win-overlay').classList.remove('on');
+  document.getElementById('stats-overlay').classList.remove('on');
+  document.getElementById('teacher-overlay').classList.remove('on');
   showScreen('room-screen');
 }
 
